@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Reproductor de Música Android</string>
+    <string name="artist">Artista</string>
+    <string name="song">Canción</string>
+    <string name="filters">Filtros</string>
+    <string name="album">Album</string>
+    <string name="filters_descr">Seleccione una opción de filtrado</string>
+</resources>
