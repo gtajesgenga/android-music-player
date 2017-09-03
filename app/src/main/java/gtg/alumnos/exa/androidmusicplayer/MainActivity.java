@@ -1,10 +1,10 @@
 package gtg.alumnos.exa.androidmusicplayer;
 
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.util.Pair;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -13,10 +13,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import gtg.alumnos.exa.androidmusicplayer.dummy.DummyContent;
-
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, ItemsFragment.OnListFragmentInteractionListener {
+        implements NavigationView.OnNavigationItemSelectedListener, ArtistsFragment.OnListFragmenArtisttInteractionListener, AlbumsFragment.OnListFragmentAlbumInteractionListener{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,13 +71,11 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        Fragment fragment = null;
-        Boolean fragment_selected = false;
+        Fragment fragment;
 
         if (id == R.id.nav_artist) {
-            fragment = new ItemsFragment();
+            fragment = new ArtistsFragment();
             getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).commit();
-            fragment_selected = true;
         } else if (id == R.id.nav_album) {
 
         } else if (id == R.id.nav_song) {
@@ -93,7 +89,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+    public void onListFragmentArtistInteraction(Pair<String,String> item) {
+        AlbumsFragment fragment = AlbumsFragment.newInstance(1, MediaStore.Audio.ArtistColumns.ARTIST + "=?", new String[]{item.first});
+        getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).commit();
+    }
+
+    @Override
+    public void onListFragmentAlbumInteraction(Quart<String, String, String, String> item) {
 
     }
 }
