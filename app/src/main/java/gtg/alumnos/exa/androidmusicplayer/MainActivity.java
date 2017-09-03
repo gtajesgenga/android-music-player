@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -15,6 +16,8 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, ArtistsFragment.OnListFragmenArtisttInteractionListener, AlbumsFragment.OnListFragmentAlbumInteractionListener{
+
+    private ActionBar ab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +34,8 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        ab = getSupportActionBar();
+        onNavigationItemSelected(navigationView.getMenu().getItem(0));
     }
 
     @Override
@@ -71,20 +76,21 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        Fragment fragment;
+        Fragment fragment = null;
 
         if (id == R.id.nav_artist) {
             fragment = new ArtistsFragment();
-            getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).commit();
         } else if (id == R.id.nav_album) {
-
+            fragment = AlbumsFragment.newInstance(1, null, null);
         } else if (id == R.id.nav_song) {
 
         }
+        getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).commit();
         item.setChecked(true);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+        ab.setSubtitle(item.getTitle());
         return true;
     }
 
@@ -92,6 +98,7 @@ public class MainActivity extends AppCompatActivity
     public void onListFragmentArtistInteraction(Pair<String,String> item) {
         AlbumsFragment fragment = AlbumsFragment.newInstance(1, MediaStore.Audio.ArtistColumns.ARTIST + "=?", new String[]{item.first});
         getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).commit();
+        ab.setSubtitle(getResources().getString(R.string.albums));
     }
 
     @Override

@@ -6,6 +6,7 @@
 
     <string name="artist">Artist</string>
     <string name="album">Album</string>
+    <string name="albums">Albums</string>
     <string name="song">Song</string>
 
     <string name="action_settings">Settings</string>
@@ -13,4 +14,7 @@
     <string name="filters_descr">Select a filter option</string>
     <string name="count_songs">%s song(s)</string>
     <string name="count_albums">%s album(s)</string>
+    <string name="overflow_button">overflow button</string>
+    <string name="thumbnail_description">thumbnail_description</string>
+    <string name="image_description">image_description</string>
 </resources>
