@@ -35,7 +35,7 @@ public class AlbumsFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 1;
     RecyclerView recyclerView;
-    private List<Quart<String, String, String, String>> mData;
+    private List<Album> mData;
     private OnListFragmentAlbumInteractionListener mListener;
     private MyAlbumsRecyclerViewAdapter adapter;
     private String[] selectionArgs;
@@ -123,7 +123,7 @@ public class AlbumsFragment extends Fragment {
      */
     public interface OnListFragmentAlbumInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentAlbumInteraction(Quart<String, String, String, String> item);
+        void onListFragmentAlbumInteraction(Album item);
     }
 
     protected class AlbumCursorLoaderCB implements LoaderManager.LoaderCallbacks<Cursor>{
@@ -132,7 +132,7 @@ public class AlbumsFragment extends Fragment {
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
             return new CursorLoader(AlbumsFragment.this.getActivity(),
                     MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-                    new String[]{"_id",MediaStore.Audio.AlbumColumns.ARTIST, MediaStore.Audio.AlbumColumns.ALBUM, MediaStore.Audio.AlbumColumns.NUMBER_OF_SONGS, MediaStore.Audio.AlbumColumns.ALBUM_ART}, AlbumsFragment.this.selection, AlbumsFragment.this.selectionArgs, null);
+                    new String[]{"_id",MediaStore.Audio.AlbumColumns.ARTIST,MediaStore.Audio.Albums.ALBUM_ID, MediaStore.Audio.AlbumColumns.ALBUM, MediaStore.Audio.AlbumColumns.NUMBER_OF_SONGS, MediaStore.Audio.AlbumColumns.ALBUM_ART}, AlbumsFragment.this.selection, AlbumsFragment.this.selectionArgs, null);
         }
 
         @Override
@@ -140,24 +140,24 @@ public class AlbumsFragment extends Fragment {
             AlbumsFragment.this.mData.clear();
             int index;
             for (data.moveToFirst(); !data.isAfterLast(); data.moveToNext()) {
-                String songs_count = null;
-                String album = null;
-                String artist = null;
-                String thumbnail = null;
+                Album album = new Album();
 
                 if ((index = data.getColumnIndex(MediaStore.Audio.AlbumColumns.ARTIST)) != -1)
-                    artist = data.getString(index);
+                    album.setArtist(data.getString(index));
 
                 if ((index = data.getColumnIndex(MediaStore.Audio.AlbumColumns.ALBUM)) != -1)
-                    album = data.getString(index);
+                    album.setAlbum(data.getString(index));
 
                 if ((index = data.getColumnIndex(MediaStore.Audio.AlbumColumns.NUMBER_OF_SONGS)) != -1)
-                    songs_count = String.valueOf(data.getInt(index));
+                    album.setSongs_count(data.getInt(index));
 
                 if ((index = data.getColumnIndex(MediaStore.Audio.AlbumColumns.ALBUM_ART)) != -1)
-                    thumbnail = data.getString(index);
+                    album.setAlbum_art(data.getString(index));
 
-                AlbumsFragment.this.mData.add(new Quart<String, String, String, String>(artist, album, songs_count, thumbnail));
+                if ((index = data.getColumnIndex(MediaStore.Audio.AlbumColumns.ALBUM_ID)) != -1)
+                    album.setId(data.getInt(index));
+
+                AlbumsFragment.this.mData.add(album);
             }
             adapter.notifyDataSetChanged();
         }

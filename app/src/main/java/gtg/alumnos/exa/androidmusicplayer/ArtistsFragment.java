@@ -34,7 +34,7 @@ public class ArtistsFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmenArtisttInteractionListener mListener;
-    private List<Pair<String, String>> mData;
+    private List<Artist> mData;
     RecyclerView recyclerView;
     private MyArtistsRecyclerViewAdapter adapter;
 
@@ -116,7 +116,7 @@ public class ArtistsFragment extends Fragment {
      */
     public interface OnListFragmenArtisttInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentArtistInteraction(Pair<String,String> item);
+        void onListFragmentArtistInteraction(Artist item);
     }
 
     protected class ArtistCursorLoaderCB implements LoaderManager.LoaderCallbacks<Cursor>{
@@ -133,16 +133,15 @@ public class ArtistsFragment extends Fragment {
             ArtistsFragment.this.mData.clear();
             int index;
             for (data.moveToFirst(); !data.isAfterLast(); data.moveToNext()) {
-                String albums_count = null;
-                String artist = null;
+                Artist artist = new Artist();
 
                 if ((index = data.getColumnIndex(MediaStore.Audio.ArtistColumns.ARTIST)) != -1)
-                    artist = data.getString(index);
+                    artist.setName(data.getString(index));
 
                 if ((index = data.getColumnIndex(MediaStore.Audio.ArtistColumns.NUMBER_OF_ALBUMS)) != -1)
-                    albums_count = String.valueOf(data.getInt(index));
+                    artist.setAlbums_count(data.getInt(index));
 
-                ArtistsFragment.this.mData.add(new Pair<String, String>(artist, albums_count));
+                ArtistsFragment.this.mData.add(artist);
             }
             adapter.notifyDataSetChanged();
         }

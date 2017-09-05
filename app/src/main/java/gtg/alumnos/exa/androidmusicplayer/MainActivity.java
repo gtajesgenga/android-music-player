@@ -5,10 +5,8 @@ import android.provider.MediaStore;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.util.Pair;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -93,25 +91,23 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onListFragmentArtistInteraction(Pair<String,String> item) {
+    public void onListFragmentArtistInteraction(Artist item) {
         StringBuffer selection = new StringBuffer(MediaStore.Audio.AlbumColumns.ARTIST);
         selection.append("=?");
-        AlbumsFragment fragment = AlbumsFragment.newInstance(1, selection.toString(), new String[]{item.first});
+        AlbumsFragment fragment = AlbumsFragment.newInstance(1, selection.toString(), new String[]{item.getName()});
         getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
     }
 
     @Override
-    public void onListFragmentAlbumInteraction(Quart<String, String, String, String> item) {
-        StringBuffer selection = new StringBuffer(MediaStore.Audio.Media.ARTIST);
-        selection.append("=? AND ");
-        selection.append(MediaStore.Audio.Media.ALBUM);
+    public void onListFragmentAlbumInteraction(Album item) {
+        StringBuffer selection = new StringBuffer(MediaStore.Audio.Media.ALBUM_ID);
         selection.append("=?");
-        SongsFragment fragment = SongsFragment.newInstance(1, selection.toString(), new String[]{item.first, item.second});
+        SongsFragment fragment = SongsFragment.newInstance(1, selection.toString(), new String[]{item.getId().toString()});
         getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
     }
 
     @Override
-    public void onListFragmentSongInteraction(Quart<String, String, Long, String> item) {
+    public void onListFragmentSongInteraction(Song item) {
 
     }
 }

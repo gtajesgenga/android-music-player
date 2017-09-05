@@ -19,10 +19,10 @@ import gtg.alumnos.exa.androidmusicplayer.ArtistsFragment.OnListFragmenArtisttIn
  */
 public class MyArtistsRecyclerViewAdapter extends RecyclerView.Adapter<MyArtistsRecyclerViewAdapter.ViewHolder> {
 
-    private final List<Pair<String,String>> mValues;
+    private final List<Artist> mValues;
     private final OnListFragmenArtisttInteractionListener mListener;
 
-    public MyArtistsRecyclerViewAdapter(List<Pair<String,String>> items, OnListFragmenArtisttInteractionListener listener) {
+    public MyArtistsRecyclerViewAdapter(List<Artist> items, OnListFragmenArtisttInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -37,11 +37,11 @@ public class MyArtistsRecyclerViewAdapter extends RecyclerView.Adapter<MyArtists
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        if (holder.mItem.first != null) {
-            holder.artist.setText(holder.mItem.first);
+        if (holder.mItem.getName() != null) {
+            holder.artist.setText(holder.mItem.getName());
         }
-        if (holder.mItem.second != null) {
-            holder.count.setText(String.format(holder.mView.getResources().getString(R.string.count_albums), holder.mItem.second));
+        if (holder.mItem.getAlbums_count() != null) {
+            holder.count.setText(String.format(holder.mView.getResources().getString(R.string.count_albums), holder.mItem.getAlbums_count().toString()));
         }
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -73,7 +73,7 @@ public class MyArtistsRecyclerViewAdapter extends RecyclerView.Adapter<MyArtists
         private final TextView artist;
         private final TextView count;
         private final ImageView overflow;
-        public Pair<String,String> mItem;
+        public Artist mItem;
 
         public ViewHolder(View view) {
             super(view);

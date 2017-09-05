@@ -14,16 +14,16 @@ import java.util.List;
 import gtg.alumnos.exa.androidmusicplayer.AlbumsFragment.OnListFragmentAlbumInteractionListener;
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link Quart<String, String, String, String>} and makes a call to the
+ * {@link RecyclerView.Adapter} that can display a {@link Song} and makes a call to the
  * specified {@link OnListFragmentAlbumInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
 public class MySongsRecyclerViewAdapter extends RecyclerView.Adapter<MySongsRecyclerViewAdapter.ViewHolder> {
 
-    private final List<Quart<String, String, Long, String>> mValues;
+    private final List<Song> mValues;
     private final SongsFragment.OnListFragmentSongInteractionListener mListener;
 
-    public MySongsRecyclerViewAdapter(List<Quart<String, String, Long, String>> items, SongsFragment.OnListFragmentSongInteractionListener listener) {
+    public MySongsRecyclerViewAdapter(List<Song> items, SongsFragment.OnListFragmentSongInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -39,18 +39,18 @@ public class MySongsRecyclerViewAdapter extends RecyclerView.Adapter<MySongsRecy
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
 
-        if (holder.mItem.first != null) {
-            holder.title.setText(holder.mItem.first);
+        if (holder.mItem.getTitle() != null) {
+            holder.title.setText(holder.mItem.getTitle());
         }
 
-        if (holder.mItem.third != null) {
-            holder.duration.setText(DateUtils.formatElapsedTime(holder.mItem.third / 1000l));
+        if (holder.mItem.getFormatedDuration() != null) {
+            holder.duration.setText(holder.mItem.getFormatedDuration());
         }
 
-        if (holder.mItem.fourth != null) {
-            holder.art.setImageURI(Uri.parse(holder.mItem.fourth));
+        if (holder.mItem.getAlbumArt() != null) {
+            holder.art.setImageURI(Uri.parse(holder.mItem.getAlbumArt()));
         } else {
-            //holder.art.setVisibility(View.GONE);
+            holder.art.setVisibility(View.GONE);
         }
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -75,7 +75,7 @@ public class MySongsRecyclerViewAdapter extends RecyclerView.Adapter<MySongsRecy
         public final TextView title;
         public final TextView duration;
         public final ImageView art;
-        public Quart<String, String, Long, String> mItem;
+        public Song mItem;
 
         public ViewHolder(View view) {
             super(view);

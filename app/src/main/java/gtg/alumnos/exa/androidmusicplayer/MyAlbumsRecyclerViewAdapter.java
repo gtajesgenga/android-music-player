@@ -13,16 +13,16 @@ import java.util.List;
 import gtg.alumnos.exa.androidmusicplayer.AlbumsFragment.OnListFragmentAlbumInteractionListener;
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link Quart<String, String, String, String>} and makes a call to the
+ * {@link RecyclerView.Adapter} that can display a {@link Album} and makes a call to the
  * specified {@link OnListFragmentAlbumInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
 public class MyAlbumsRecyclerViewAdapter extends RecyclerView.Adapter<MyAlbumsRecyclerViewAdapter.ViewHolder> {
 
-    private final List<Quart<String, String, String, String>> mValues;
+    private final List<Album> mValues;
     private final OnListFragmentAlbumInteractionListener mListener;
 
-    public MyAlbumsRecyclerViewAdapter(List<Quart<String, String, String, String>> items, OnListFragmentAlbumInteractionListener listener) {
+    public MyAlbumsRecyclerViewAdapter(List<Album> items, OnListFragmentAlbumInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -38,20 +38,20 @@ public class MyAlbumsRecyclerViewAdapter extends RecyclerView.Adapter<MyAlbumsRe
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
 
-        if (holder.mItem.first != null) {
-            holder.artist.setText(holder.mItem.first);
+        if (holder.mItem.getArtist() != null) {
+            holder.artist.setText(holder.mItem.getArtist());
         }
 
-        if (holder.mItem.second != null) {
-            holder.album.setText(holder.mItem.second);
+        if (holder.mItem.getAlbum() != null) {
+            holder.album.setText(holder.mItem.getAlbum());
         }
 
-        if (holder.mItem.third != null) {
-            holder.count.setText(String.format(holder.mView.getResources().getString(R.string.count_songs), holder.mItem.third));
+        if (holder.mItem.getSongs_count() != null) {
+            holder.count.setText(String.format(holder.mView.getResources().getString(R.string.count_songs), holder.mItem.getSongs_count().toString()));
         }
 
-        if (holder.mItem.fourth != null) {
-            holder.thumbnail.setImageURI(Uri.parse(holder.mItem.fourth));
+        if (holder.mItem.getAlbum_art() != null) {
+            holder.thumbnail.setImageURI(Uri.parse(holder.mItem.getAlbum_art()));
         } else {
             holder.thumbnail.setVisibility(View.GONE);
         }
@@ -80,7 +80,7 @@ public class MyAlbumsRecyclerViewAdapter extends RecyclerView.Adapter<MyAlbumsRe
         public final ImageView overflow;
         public final ImageView thumbnail;
         public final TextView count;
-        public Quart<String, String, String, String> mItem;
+        public Album mItem;
 
         public ViewHolder(View view) {
             super(view);
