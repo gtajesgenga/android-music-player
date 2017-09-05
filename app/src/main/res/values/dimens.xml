@@ -7,7 +7,7 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="text_margin">16dp</dimen>
     <dimen name="smallAlbumArtMargin">5dp</dimen>
-    <dimen name="smallAlbumArt">50dp</dimen>
+    <dimen name="smallAlbumArt">65dp</dimen>
     <dimen name="card_margin">5dp</dimen>
     <dimen name="card_radius">0dp</dimen>
     <dimen name="ic_album_overflow_width">20dp</dimen>

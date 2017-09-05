@@ -10,6 +10,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.util.Pair;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -67,6 +68,7 @@ public class ArtistsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        ((AppCompatActivity)this.getActivity()).getSupportActionBar().setSubtitle(getActivity().getResources().getString(R.string.artist));
         View view = inflater.inflate(R.layout.fragment_artists_list, container, false);
         getLoaderManager().initLoader(0, null, new ArtistCursorLoaderCB());
         // Set the adapter
@@ -128,6 +130,7 @@ public class ArtistsFragment extends Fragment {
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            ArtistsFragment.this.mData.clear();
             int index;
             for (data.moveToFirst(); !data.isAfterLast(); data.moveToNext()) {
                 String albums_count = null;

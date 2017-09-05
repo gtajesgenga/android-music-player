@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.util.Pair;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -15,9 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, ArtistsFragment.OnListFragmenArtisttInteractionListener, AlbumsFragment.OnListFragmentAlbumInteractionListener{
-
-    private ActionBar ab;
+        implements NavigationView.OnNavigationItemSelectedListener, ArtistsFragment.OnListFragmenArtisttInteractionListener, AlbumsFragment.OnListFragmentAlbumInteractionListener, SongsFragment.OnListFragmentSongInteractionListener{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +33,6 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        ab = getSupportActionBar();
         onNavigationItemSelected(navigationView.getMenu().getItem(0));
     }
 
@@ -83,26 +81,37 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_album) {
             fragment = AlbumsFragment.newInstance(1, null, null);
         } else if (id == R.id.nav_song) {
-
+            fragment = SongsFragment.newInstance(1, null, null);
         }
+        getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).commit();
         item.setChecked(true);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
-        ab.setSubtitle(item.getTitle());
         return true;
     }
 
     @Override
     public void onListFragmentArtistInteraction(Pair<String,String> item) {
-        AlbumsFragment fragment = AlbumsFragment.newInstance(1, MediaStore.Audio.ArtistColumns.ARTIST + "=?", new String[]{item.first});
-        getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).commit();
-        ab.setSubtitle(getResources().getString(R.string.albums));
+        StringBuffer selection = new StringBuffer(MediaStore.Audio.AlbumColumns.ARTIST);
+        selection.append("=?");
+        AlbumsFragment fragment = AlbumsFragment.newInstance(1, selection.toString(), new String[]{item.first});
+        getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
     }
 
     @Override
     public void onListFragmentAlbumInteraction(Quart<String, String, String, String> item) {
+        StringBuffer selection = new StringBuffer(MediaStore.Audio.Media.ARTIST);
+        selection.append("=? AND ");
+        selection.append(MediaStore.Audio.Media.ALBUM);
+        selection.append("=?");
+        SongsFragment fragment = SongsFragment.newInstance(1, selection.toString(), new String[]{item.first, item.second});
+        getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
+    }
+
+    @Override
+    public void onListFragmentSongInteraction(Quart<String, String, Long, String> item) {
 
     }
 }

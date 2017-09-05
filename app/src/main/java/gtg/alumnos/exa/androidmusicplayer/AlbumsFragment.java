@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -74,6 +75,7 @@ public class AlbumsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        ((AppCompatActivity)this.getActivity()).getSupportActionBar().setSubtitle(getActivity().getResources().getString(R.string.album));
         View view = inflater.inflate(R.layout.fragment_albums_list, container, false);
         getLoaderManager().initLoader(0, null, new AlbumCursorLoaderCB());
         // Set the adapter
@@ -135,6 +137,7 @@ public class AlbumsFragment extends Fragment {
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            AlbumsFragment.this.mData.clear();
             int index;
             for (data.moveToFirst(); !data.isAfterLast(); data.moveToNext()) {
                 String songs_count = null;
