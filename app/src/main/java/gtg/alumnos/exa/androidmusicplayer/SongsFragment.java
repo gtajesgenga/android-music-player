@@ -72,17 +72,6 @@ public class SongsFragment extends Fragment {
             selectionArgs = getArguments().getStringArray(ARG_SELECTIONARGS);
         }
 
-        if (this.selectionArgs != null && this.selectionArgs.length > 1 && (this.selectionArgs[1] != null && !this.selectionArgs[1].isEmpty())) {
-            String album = this.selectionArgs[1];
-            Cursor cursor = SongsFragment.this.getActivity().getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-                    new String[]{MediaStore.Audio.AlbumColumns.ALBUM_ART},
-                    MediaStore.Audio.AlbumColumns.ALBUM + "=?",
-                    new String[]{album},
-                    null);
-            cursor.moveToNext();
-            album_art = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.AlbumColumns.ALBUM_ART));
-        }
-
     }
 
     @Override
@@ -145,7 +134,7 @@ public class SongsFragment extends Fragment {
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
             return new CursorLoader(SongsFragment.this.getActivity(),
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    new String[]{"_id",MediaStore.Audio.Media.TITLE, MediaStore.Audio.Media.DATA, MediaStore.Audio.Media.DURATION, MediaStore.Audio.Media.ARTIST, MediaStore.Audio.Media.ALBUM}, SongsFragment.this.selection, SongsFragment.this.selectionArgs, null);
+                    new String[]{"_id",MediaStore.Audio.Media.TITLE, MediaStore.Audio.Media.DATA, MediaStore.Audio.Media.DURATION, MediaStore.Audio.Media.ARTIST, MediaStore.Audio.Media.ARTIST_ID, MediaStore.Audio.Media.ALBUM, MediaStore.Audio.Media.ALBUM_ID}, SongsFragment.this.selection, SongsFragment.this.selectionArgs, null);
         }
 
         @Override
@@ -167,10 +156,24 @@ public class SongsFragment extends Fragment {
                 if ((index = data.getColumnIndex(MediaStore.Audio.Media.ARTIST)) != -1)
                     song.setArtist(data.getString(index));
 
+                if ((index = data.getColumnIndex(MediaStore.Audio.Media.ARTIST_ID)) != -1)
+                    song.setArtist_id(data.getLong(index));
+
                 if ((index = data.getColumnIndex(MediaStore.Audio.Media.ALBUM)) != -1)
                     song.setAlbum(data.getString(index));
 
-                song.setAlbumArt(album_art);
+                if ((index = data.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)) != -1)
+                    song.setAlbum_id(data.getLong(index));
+
+                Cursor cursor = SongsFragment.this.getActivity().getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                        new String[] {MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM_ART},
+                        MediaStore.Audio.Albums._ID+ "=?",
+                        new String[] {String.valueOf(song.getAlbum_id())},
+                        null);
+
+                if (cursor.moveToFirst()) {
+                    song.setAlbumArt(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART)));
+                }
 
                 SongsFragment.this.mData.add(song);
             }

@@ -12,12 +12,9 @@ public class Song {
     private Long duration;
     private String Artist;
     private String album;
+    private Long album_id;
+    private Long artist_id;
     private String uri;
-
-    public String getAlbumArt() {
-        return albumArt;
-    }
-
     private String albumArt;
 
     public String getTitle() {
@@ -64,7 +61,27 @@ public class Song {
         this.uri = uri;
     }
 
+    public String getAlbumArt() {
+        return albumArt;
+    }
+
     public void setAlbumArt(String albumArt) {
         this.albumArt = albumArt;
+    }
+
+    public Long getAlbum_id() {
+        return album_id;
+    }
+
+    public void setAlbum_id(Long album_id) {
+        this.album_id = album_id;
+    }
+
+    public Long getArtist_id() {
+        return artist_id;
+    }
+
+    public void setArtist_id(Long artist_id) {
+        this.artist_id = artist_id;
     }
 }

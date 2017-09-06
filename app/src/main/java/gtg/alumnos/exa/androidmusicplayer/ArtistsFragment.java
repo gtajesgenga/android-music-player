@@ -125,7 +125,7 @@ public class ArtistsFragment extends Fragment {
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
             return new CursorLoader(ArtistsFragment.this.getActivity(),
                     MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
-                    new String[]{"_id",MediaStore.Audio.ArtistColumns.ARTIST, MediaStore.Audio.ArtistColumns.NUMBER_OF_ALBUMS}, null, null, null);
+                    new String[]{"_id",MediaStore.Audio.Artists.ARTIST, MediaStore.Audio.Artists.NUMBER_OF_ALBUMS}, null, null, null);
         }
 
         @Override

@@ -132,7 +132,7 @@ public class AlbumsFragment extends Fragment {
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
             return new CursorLoader(AlbumsFragment.this.getActivity(),
                     MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-                    new String[]{"_id",MediaStore.Audio.AlbumColumns.ARTIST,MediaStore.Audio.Albums.ALBUM_ID, MediaStore.Audio.AlbumColumns.ALBUM, MediaStore.Audio.AlbumColumns.NUMBER_OF_SONGS, MediaStore.Audio.AlbumColumns.ALBUM_ART}, AlbumsFragment.this.selection, AlbumsFragment.this.selectionArgs, null);
+                    new String[]{"_id",MediaStore.Audio.Albums.ARTIST,MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM, MediaStore.Audio.Albums.NUMBER_OF_SONGS, MediaStore.Audio.AlbumColumns.ALBUM_ART}, AlbumsFragment.this.selection, AlbumsFragment.this.selectionArgs, null);
         }
 
         @Override
@@ -142,19 +142,19 @@ public class AlbumsFragment extends Fragment {
             for (data.moveToFirst(); !data.isAfterLast(); data.moveToNext()) {
                 Album album = new Album();
 
-                if ((index = data.getColumnIndex(MediaStore.Audio.AlbumColumns.ARTIST)) != -1)
+                if ((index = data.getColumnIndex(MediaStore.Audio.Albums.ARTIST)) != -1)
                     album.setArtist(data.getString(index));
 
-                if ((index = data.getColumnIndex(MediaStore.Audio.AlbumColumns.ALBUM)) != -1)
+                if ((index = data.getColumnIndex(MediaStore.Audio.Albums.ALBUM)) != -1)
                     album.setAlbum(data.getString(index));
 
-                if ((index = data.getColumnIndex(MediaStore.Audio.AlbumColumns.NUMBER_OF_SONGS)) != -1)
+                if ((index = data.getColumnIndex(MediaStore.Audio.Albums.NUMBER_OF_SONGS)) != -1)
                     album.setSongs_count(data.getInt(index));
 
                 if ((index = data.getColumnIndex(MediaStore.Audio.AlbumColumns.ALBUM_ART)) != -1)
                     album.setAlbum_art(data.getString(index));
 
-                if ((index = data.getColumnIndex(MediaStore.Audio.AlbumColumns.ALBUM_ID)) != -1)
+                if ((index = data.getColumnIndex(MediaStore.Audio.Albums._ID)) != -1)
                     album.setId(data.getInt(index));
 
                 AlbumsFragment.this.mData.add(album);
