@@ -3,28 +3,27 @@ package gtg.alumnos.exa.androidmusicplayer;
 import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.RecyclerView;
-import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.List;
+import gtg.alumnos.exa.androidmusicplayer.ItemFragment.OnListFragmentInteractionListener;
 
-import gtg.alumnos.exa.androidmusicplayer.AlbumsFragment.OnListFragmentAlbumInteractionListener;
+import java.util.List;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link Song} and makes a call to the
- * specified {@link OnListFragmentAlbumInteractionListener}.
+ * specified {@link OnListFragmentInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class MySongsRecyclerViewAdapter extends RecyclerView.Adapter<MySongsRecyclerViewAdapter.ViewHolder> {
+public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
 
     private final List<Song> mValues;
-    private final SongsFragment.OnListFragmentSongInteractionListener mListener;
+    private final OnListFragmentInteractionListener mListener;
 
-    public MySongsRecyclerViewAdapter(List<Song> items, SongsFragment.OnListFragmentSongInteractionListener listener) {
+    public MyItemRecyclerViewAdapter(List<Song> items, OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -54,13 +53,22 @@ public class MySongsRecyclerViewAdapter extends RecyclerView.Adapter<MySongsRecy
             holder.art.setVisibility(View.GONE);
         }
 
+        holder.flag.setVisibility(View.VISIBLE);
+        if (holder.mItem.getIs_playing().equals(Song.SongStatus.PLAYING)) {
+            holder.flag.setImageDrawable(holder.mView.getResources().getDrawable(R.drawable.ic_play_circle_filled_lightblue, holder.mView.getContext().getTheme()));
+        } else if (holder.mItem.getIs_playing().equals(Song.SongStatus.PAUSED)) {
+            holder.flag.setImageDrawable(holder.mView.getResources().getDrawable(R.drawable.ic_pause_circle_filled_lightblue, holder.mView.getContext().getTheme()));
+        } else {
+            holder.flag.setVisibility(View.GONE);
+        }
+
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (null != mListener) {
                     // Notify the active callbacks interface (the activity, if the
                     // fragment is attached to one) that an item has been selected.
-                    mListener.onListFragmentSongInteraction(holder.mItem);
+                    mListener.onListFragmentInteraction(holder.mItem);
                 }
             }
         });
@@ -77,6 +85,7 @@ public class MySongsRecyclerViewAdapter extends RecyclerView.Adapter<MySongsRecy
         public final TextView duration;
         public final ImageView art;
         public final FloatingActionButton flag;
+
         public Song mItem;
 
         public ViewHolder(View view) {
@@ -87,7 +96,6 @@ public class MySongsRecyclerViewAdapter extends RecyclerView.Adapter<MySongsRecy
             art = (ImageView) view.findViewById(R.id.art);
             flag = (FloatingActionButton) view.findViewById(R.id.play_flag);
             flag.setBackgroundTintList(null);
-            flag.setVisibility(View.INVISIBLE);
         }
 
         @Override

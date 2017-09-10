@@ -31,7 +31,7 @@ public class SongsFragment extends Fragment {
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
     private static final String ARG_SELECTION = "selection";
-    private static final String ARG_SELECTIONARGS = "slelection-args";
+    private static final String ARG_SELECTIONARGS = "selection-args";
     // TODO: Customize parameters
     private int mColumnCount = 1;
     RecyclerView recyclerView;
@@ -40,7 +40,6 @@ public class SongsFragment extends Fragment {
     private MySongsRecyclerViewAdapter adapter;
     private String[] selectionArgs;
     private String selection;
-    private String album_art;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -79,7 +78,7 @@ public class SongsFragment extends Fragment {
                              Bundle savedInstanceState) {
         ((AppCompatActivity)this.getActivity()).getSupportActionBar().setSubtitle(getActivity().getResources().getString(R.string.song));
         View view = inflater.inflate(R.layout.fragment_albums_list, container, false);
-        getLoaderManager().initLoader(0, null, new AlbumCursorLoaderCB());
+        getLoaderManager().initLoader(0, null, new SongCursorLoaderCB());
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
@@ -128,7 +127,7 @@ public class SongsFragment extends Fragment {
         void onListFragmentSongInteraction(Song item);
     }
 
-    protected class AlbumCursorLoaderCB implements LoaderManager.LoaderCallbacks<Cursor>{
+    protected class SongCursorLoaderCB implements LoaderManager.LoaderCallbacks<Cursor>{
 
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -174,6 +173,7 @@ public class SongsFragment extends Fragment {
                 if (cursor.moveToFirst()) {
                     song.setAlbumArt(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART)));
                 }
+                cursor.close();
 
                 SongsFragment.this.mData.add(song);
             }

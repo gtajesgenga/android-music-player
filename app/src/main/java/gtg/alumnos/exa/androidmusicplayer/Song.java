@@ -1,12 +1,22 @@
 package gtg.alumnos.exa.androidmusicplayer;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.format.DateUtils;
+
+import java.io.Serializable;
 
 /**
  * Created by gus on 05/09/17.
  */
 
-public class Song {
+public class Song implements Serializable {
+
+    public enum SongStatus {
+        PLAYING,
+        PAUSED,
+        STOPED
+    }
 
     private String title;
     private Long duration;
@@ -16,6 +26,10 @@ public class Song {
     private Long artist_id;
     private String uri;
     private String albumArt;
+
+    private SongStatus is_playing = SongStatus.STOPED;
+
+    public Song() {}
 
     public String getTitle() {
         return title;
@@ -83,5 +97,18 @@ public class Song {
 
     public void setArtist_id(Long artist_id) {
         this.artist_id = artist_id;
+    }
+
+    public SongStatus getIs_playing() {
+        return is_playing;
+    }
+
+    public void setIs_playing(SongStatus is_playing) {
+        this.is_playing = is_playing;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s", this.title);
     }
 }

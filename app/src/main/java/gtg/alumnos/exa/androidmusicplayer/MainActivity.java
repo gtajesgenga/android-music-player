@@ -14,7 +14,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, ArtistsFragment.OnListFragmenArtisttInteractionListener, AlbumsFragment.OnListFragmentAlbumInteractionListener, SongsFragment.OnListFragmentSongInteractionListener{
+        implements NavigationView.OnNavigationItemSelectedListener,
+        ArtistsFragment.OnListFragmenArtisttInteractionListener,
+        AlbumsFragment.OnListFragmentAlbumInteractionListener,
+        SongsFragment.OnListFragmentSongInteractionListener,
+        ItemFragment.OnListFragmentInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +112,40 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onListFragmentSongInteraction(Song item) {
+        StringBuffer selection = new StringBuffer();
+        StringBuffer selectionArgs = new StringBuffer();
+        if (item.getAlbum_id() != null) {
+            selection.append(",").append(MediaStore.Audio.Media.ALBUM_ID);
+            selectionArgs.append(",").append(item.getAlbum_id().toString());
+        }
+
+        if (item.getArtist() != null) {
+            selection.append(",").append(MediaStore.Audio.Media.ARTIST);
+            selectionArgs.append(",").append(item.getArtist());
+        }
+
+        if (item.getAlbumArt() != null) {
+            selection.append(",").append(MediaStore.Audio.AlbumColumns.ALBUM_ART);
+            selectionArgs.append(",").append(item.getAlbumArt());
+        }
+
+        if (item.getUri() != null) {
+            selection.append(",").append(MediaStore.Audio.Media.DATA);
+            selectionArgs.append(",").append(item.getUri());
+        }
+
+        if (selection.toString().startsWith(","))
+            selection.replace(0, selection.length(),selection.toString().replaceFirst(",", ""));
+
+        if (selectionArgs.toString().startsWith(","))
+            selectionArgs.replace(0, selectionArgs.length(),selectionArgs.toString().replaceFirst(",", ""));
+
+        ItemFragment fragment = ItemFragment.newInstance(1, selection.toString(), selectionArgs.toString().split(","));
+        getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
+    }
+
+    @Override
+    public void onListFragmentInteraction(Song item) {
 
     }
 }
