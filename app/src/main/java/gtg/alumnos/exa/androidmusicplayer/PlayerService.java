@@ -311,11 +311,11 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
     private void sendSongData() {
         Song s = this.songList.get(index);
         if (this.playing)
-            s.setIs_playing(Song.SongStatus.PLAYING);
+            s.setSongStatus(Song.SongStatus.PLAYING);
         else if (this.pause)
-            s.setIs_playing(Song.SongStatus.PAUSED);
+            s.setSongStatus(Song.SongStatus.PAUSED);
         else
-            s.setIs_playing(Song.SongStatus.STOPED);
+            s.setSongStatus(Song.SongStatus.STOPED);
         //Foreground
         NotificationCompat.Builder b=new NotificationCompat.Builder(this);
 

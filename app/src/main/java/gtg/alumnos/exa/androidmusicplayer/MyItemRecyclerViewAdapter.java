@@ -54,9 +54,9 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         }
 
         holder.flag.setVisibility(View.VISIBLE);
-        if (holder.mItem.getIs_playing().equals(Song.SongStatus.PLAYING)) {
+        if (holder.mItem.getSongStatus().equals(Song.SongStatus.PLAYING)) {
             holder.flag.setImageDrawable(holder.mView.getResources().getDrawable(R.drawable.ic_play_circle_filled_lightblue, holder.mView.getContext().getTheme()));
-        } else if (holder.mItem.getIs_playing().equals(Song.SongStatus.PAUSED)) {
+        } else if (holder.mItem.getSongStatus().equals(Song.SongStatus.PAUSED)) {
             holder.flag.setImageDrawable(holder.mView.getResources().getDrawable(R.drawable.ic_pause_circle_filled_lightblue, holder.mView.getContext().getTheme()));
         } else {
             holder.flag.setVisibility(View.GONE);

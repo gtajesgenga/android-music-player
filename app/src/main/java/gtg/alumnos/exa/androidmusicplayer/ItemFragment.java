@@ -21,9 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -74,7 +72,7 @@ public class ItemFragment extends Fragment {
                 playPause.setImageResource(android.R.drawable.ic_media_play);
             }
             Song s = (Song) intent.getSerializableExtra(PlayerService.EXTRA_SONG);
-            mData.get(mData.indexOf(s)).setIs_playing(s.getIs_playing());
+            mData.get(mData.indexOf(s)).setSongStatus(s.getSongStatus());
             adapter.notifyDataSetChanged();
         }
     };

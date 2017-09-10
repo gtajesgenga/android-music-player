@@ -1,7 +1,5 @@
 package gtg.alumnos.exa.androidmusicplayer;
 
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.text.format.DateUtils;
 
 import java.io.Serializable;
@@ -27,7 +25,7 @@ public class Song implements Serializable {
     private String uri;
     private String albumArt;
 
-    private SongStatus is_playing = SongStatus.STOPED;
+    private SongStatus songStatus = SongStatus.STOPED;
 
     public Song() {}
 
@@ -99,12 +97,12 @@ public class Song implements Serializable {
         this.artist_id = artist_id;
     }
 
-    public SongStatus getIs_playing() {
-        return is_playing;
+    public SongStatus getSongStatus() {
+        return songStatus;
     }
 
-    public void setIs_playing(SongStatus is_playing) {
-        this.is_playing = is_playing;
+    public void setSongStatus(SongStatus songStatus) {
+        this.songStatus = songStatus;
     }
 
     @Override
