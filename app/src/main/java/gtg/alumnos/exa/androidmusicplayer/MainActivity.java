@@ -15,7 +15,7 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        ArtistsFragment.OnListFragmenArtisttInteractionListener,
+        ArtistsFragment.OnListFragmenArtistInteractionListener,
         AlbumsFragment.OnListFragmentAlbumInteractionListener,
         SongsFragment.OnListFragmentSongInteractionListener,
         ItemFragment.OnListFragmentInteractionListener {
@@ -99,6 +99,25 @@ public class MainActivity extends AppCompatActivity
         StringBuffer selection = new StringBuffer(MediaStore.Audio.AlbumColumns.ARTIST);
         selection.append("=?");
         AlbumsFragment fragment = AlbumsFragment.newInstance(1, selection.toString(), new String[]{item.getName()});
+        getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
+    }
+
+    @Override
+    public void onOverflowArtistInteraction(Artist item) {
+        StringBuffer selection = new StringBuffer();
+        StringBuffer selectionArgs = new StringBuffer();
+        if (item.getName() != null) {
+            selection.append(",").append(MediaStore.Audio.Media.ARTIST);
+            selectionArgs.append(",").append(item.getName());
+        }
+
+        if (selection.toString().startsWith(","))
+            selection.replace(0, selection.length(), selection.toString().replaceFirst(",", ""));
+
+        if (selectionArgs.toString().startsWith(","))
+            selectionArgs.replace(0, selectionArgs.length(), selectionArgs.toString().replaceFirst(",", ""));
+
+        ItemFragment fragment = ItemFragment.newInstance(1, selection.toString(), selectionArgs.toString().split(","));
         getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
     }
 

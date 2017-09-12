@@ -9,9 +9,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import gtg.alumnos.exa.androidmusicplayer.ItemFragment.OnListFragmentInteractionListener;
-
 import java.util.List;
+
+import gtg.alumnos.exa.androidmusicplayer.ItemFragment.OnListFragmentInteractionListener;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link Song} and makes a call to the
@@ -49,8 +49,6 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
 
         if (holder.mItem.getAlbumArt() != null) {
             holder.art.setImageURI(Uri.parse(holder.mItem.getAlbumArt()));
-        } else {
-            holder.art.setVisibility(View.GONE);
         }
 
         holder.flag.setVisibility(View.VISIBLE);

@@ -20,7 +20,10 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class PlayerService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener  {
+public class PlayerService extends Service implements MediaPlayer.OnCompletionListener,
+        MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnSeekCompleteListener,
+        MediaPlayer.OnInfoListener, MediaPlayer.OnBufferingUpdateListener,
+        AudioManager.OnAudioFocusChangeListener {
 
     private static final String TAG = PlayerService.class.getCanonicalName();
     public static final String PLAYING_INFO="gtg.alumnos.exa.androidmusicplayer.PLAYING_INFO";
@@ -234,6 +237,30 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
         }
     }
 
+    @Override
+    public void onAudioFocusChange(int i) {
+
+    }
+
+    @Override
+    public void onBufferingUpdate(MediaPlayer mediaPlayer, int i) {
+
+    }
+
+    @Override
+    public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
+        return false;
+    }
+
+    @Override
+    public boolean onInfo(MediaPlayer mediaPlayer, int i, int i1) {
+        return false;
+    }
+
+    @Override
+    public void onSeekComplete(MediaPlayer mediaPlayer) {
+
+    }
 
 
     private class SongLoader extends AsyncTask<Object,Object,Object> {
@@ -269,7 +296,7 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
             Cursor data = PlayerService.this.getContentResolver().query(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     new String[]{"_id",MediaStore.Audio.Media.TITLE,
-                            MediaStore.Audio.Media.DATA, MediaStore.Audio.Media.ALBUM, MediaStore.Audio.Media.DURATION},
+                            MediaStore.Audio.Media.DATA, MediaStore.Audio.Media.ALBUM, MediaStore.Audio.Media.DURATION, MediaStore.Audio.Media.ALBUM_ID},
                     selection.toString().replace(",", " AND "),
                     selectionArgs.toString().split(","),
                     null);
@@ -283,9 +310,22 @@ public class PlayerService extends Service implements MediaPlayer.OnPreparedList
                 s.setTitle(data.getString(data.getColumnIndex(MediaStore.Audio.Media.TITLE)));
                 s.setDuration(data.getLong(data.getColumnIndex(MediaStore.Audio.Media.DURATION)));
                 s.setArtist(PlayerService.this.artist);
-                s.setAlbum_id(Long.valueOf(PlayerService.this.album_id));
+                if (PlayerService.this.album_id != null)
+                    s.setAlbum_id(Long.valueOf(PlayerService.this.album_id));
                 s.setAlbum(data.getString(data.getColumnIndex(MediaStore.Audio.Media.ALBUM)));
-                s.setAlbumArt(PlayerService.this.albumArt);
+                if (PlayerService.this.albumArt != null)
+                    s.setAlbumArt(PlayerService.this.albumArt);
+                else {
+                    Cursor albumCursor = PlayerService.this.getContentResolver().query(
+                            MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                            new String[]{MediaStore.Audio.Albums.ALBUM_ART},
+                            MediaStore.Audio.Albums._ID + " = ?",
+                            new String[]{Long.toString(data.getLong(data.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)))},
+                            null);
+                    while (albumCursor.moveToNext()) {
+                        s.setAlbumArt(albumCursor.getString(albumCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART)));
+                    }
+                }
                 PlayerService.this.songList.add(s);
             }
 

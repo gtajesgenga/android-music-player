@@ -9,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,7 +23,7 @@ import java.util.List;
 /**
  * A fragment representing a list of Items.
  * <p/>
- * Activities containing this fragment MUST implement the {@link OnListFragmenArtisttInteractionListener}
+ * Activities containing this fragment MUST implement the {@link OnListFragmenArtistInteractionListener}
  * interface.
  */
 public class ArtistsFragment extends Fragment {
@@ -33,7 +32,7 @@ public class ArtistsFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     // TODO: Customize parameters
     private int mColumnCount = 1;
-    private OnListFragmenArtisttInteractionListener mListener;
+    private OnListFragmenArtistInteractionListener mListener;
     private List<Artist> mData;
     RecyclerView recyclerView;
     private MyArtistsRecyclerViewAdapter adapter;
@@ -90,8 +89,8 @@ public class ArtistsFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        if (activity instanceof OnListFragmenArtisttInteractionListener) {
-            mListener = (OnListFragmenArtisttInteractionListener) activity;
+        if (activity instanceof OnListFragmenArtistInteractionListener) {
+            mListener = (OnListFragmenArtistInteractionListener) activity;
         } else {
             throw new RuntimeException(activity.toString()
                     + " must implement OnListFragmentInteractionListener");
@@ -114,9 +113,11 @@ public class ArtistsFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnListFragmenArtisttInteractionListener {
+    public interface OnListFragmenArtistInteractionListener {
         // TODO: Update argument type and name
         void onListFragmentArtistInteraction(Artist item);
+
+        void onOverflowArtistInteraction(Artist item);
     }
 
     protected class ArtistCursorLoaderCB implements LoaderManager.LoaderCallbacks<Cursor>{

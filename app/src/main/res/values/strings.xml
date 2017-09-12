@@ -19,4 +19,5 @@
     <string name="thumbnail_description">thumbnail_description</string>
     <string name="image_description">image_description</string>
     <string name="flag_button">flag_btn</string>
+    <string name="play_all">Play all</string>
 </resources>

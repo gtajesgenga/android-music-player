@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
@@ -20,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,7 @@ public class ItemFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     private static final String ARG_SELECTION = "selection";
     private static final String ARG_SELECTIONARGS = "selection-args";
+    private ImageView art;
     private ImageButton playPause;
     private ImageButton prev;
     private ImageButton next;
@@ -72,6 +75,15 @@ public class ItemFragment extends Fragment {
                 playPause.setImageResource(android.R.drawable.ic_media_play);
             }
             Song s = (Song) intent.getSerializableExtra(PlayerService.EXTRA_SONG);
+            if (s.getAlbumArt() != null) {
+                art.setImageURI(Uri.parse(s.getAlbumArt()));
+                art.setVisibility(View.VISIBLE);
+            } else
+                art.setVisibility(View.INVISIBLE);
+            for (Song item : mData) {
+                if (!item.equals(s))
+                    item.setSongStatus(Song.SongStatus.STOPED);
+            }
             mData.get(mData.indexOf(s)).setSongStatus(s.getSongStatus());
             adapter.notifyDataSetChanged();
         }
@@ -132,6 +144,8 @@ public class ItemFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
+
+        art = (ImageView) view.findViewById(R.id.art);
 
         playPause = (ImageButton) view.findViewById(R.id.btn_play);
         prev = (ImageButton) view.findViewById(R.id.btn_prev);

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -62,28 +61,13 @@
                 android:textAlignment="textEnd"
                 android:textSize="@dimen/album_title" />
 
-            <!--<ImageView-->
-                <!--android:scaleType="centerInside"-->
-                <!--android:adjustViewBounds="true"-->
-                <!--android:layout_marginBottom="@dimen/smallAlbumArtMargin"-->
-                <!--android:layout_marginLeft="@dimen/smallAlbumArtMargin"-->
-                <!--android:layout_marginRight="@dimen/smallAlbumArtMargin"-->
-                <!--android:layout_marginTop="@dimen/smallAlbumArtMargin"-->
-                <!--android:id="@+id/play_flag"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:contentDescription="@string/flag_button"-->
-                <!--android:layout_toEndOf="@id/duration"-->
-                <!--android:layout_centerVertical="true"-->
-                <!--android:layout_alignParentEnd="true"/>-->
-
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/play_flag"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentTop="true"
-                android:layout_margin="@dimen/smallAlbumArtMargin"
+                android:layout_alignTop="@id/thumbnail"
+                android:layout_alignLeft="@id/thumbnail"
+                android:layout_margin="@dimen/ic_album_overflow_margin_top"
                 android:clickable="false"
                 app:fabSize="mini"
                 app:borderWidth="0dp"/>
