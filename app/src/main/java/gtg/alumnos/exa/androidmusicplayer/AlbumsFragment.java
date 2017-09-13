@@ -124,6 +124,8 @@ public class AlbumsFragment extends Fragment {
     public interface OnListFragmentAlbumInteractionListener {
         // TODO: Update argument type and name
         void onListFragmentAlbumInteraction(Album item);
+
+        void onOverflowAlbumInteraction(Album item);
     }
 
     protected class AlbumCursorLoaderCB implements LoaderManager.LoaderCallbacks<Cursor>{

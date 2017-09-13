@@ -130,6 +130,40 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onOverflowAlbumInteraction(Album item) {
+        StringBuffer selection = new StringBuffer();
+        StringBuffer selectionArgs = new StringBuffer();
+//        if (item.getAlbum() != null) {
+//            selection.append(",").append(MediaStore.Audio.Media.ALBUM);
+//            selectionArgs.append(",").append(item.getAlbum());
+//        }
+
+        if (item.getId() != null) {
+            selection.append(",").append(MediaStore.Audio.Media.ALBUM_ID);
+            selectionArgs.append(",").append(item.getId().toString());
+        }
+
+//        if (item.getArtist() != null) {
+//            selection.append(",").append(MediaStore.Audio.Media.ARTIST);
+//            selectionArgs.append(",").append(item.getArtist());
+//        }
+
+        if (item.getAlbum_art() != null) {
+            selection.append(",").append(MediaStore.Audio.AlbumColumns.ALBUM_ART);
+            selectionArgs.append(",").append(item.getAlbum_art());
+        }
+
+        if (selection.toString().startsWith(","))
+            selection.replace(0, selection.length(), selection.toString().replaceFirst(",", ""));
+
+        if (selectionArgs.toString().startsWith(","))
+            selectionArgs.replace(0, selectionArgs.length(), selectionArgs.toString().replaceFirst(",", ""));
+
+        ItemFragment fragment = ItemFragment.newInstance(1, selection.toString(), selectionArgs.toString().split(","));
+        getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
+    }
+
+    @Override
     public void onListFragmentSongInteraction(Song item) {
         StringBuffer selection = new StringBuffer();
         StringBuffer selectionArgs = new StringBuffer();

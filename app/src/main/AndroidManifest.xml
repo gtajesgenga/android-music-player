@@ -24,6 +24,10 @@
         <service
             android:name=".PlayerService"
             android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name=".MyService"
+            android:enabled="true"
             android:exported="true"></service>
     </application>
 

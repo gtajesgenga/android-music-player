@@ -1,8 +1,12 @@
 package gtg.alumnos.exa.androidmusicplayer;
 
+import android.content.Context;
 import android.net.Uri;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -66,11 +70,54 @@ public class MyAlbumsRecyclerViewAdapter extends RecyclerView.Adapter<MyAlbumsRe
                 }
             }
         });
+
+        holder.overflow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showPopupMenu(view, holder.mItem);
+            }
+        });
+    }
+
+    private void showPopupMenu(View view, Album artist) {
+        // inflate menu
+        PopupMenu popup = new PopupMenu((Context) mListener, view);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.menu_overflow, popup.getMenu());
+        popup.setOnMenuItemClickListener(new MyAlbumsRecyclerViewAdapter.MyMenuItemClickListener(artist));
+        popup.show();
     }
 
     @Override
     public int getItemCount() {
         return mValues.size();
+    }
+
+    class MyMenuItemClickListener implements PopupMenu.OnMenuItemClickListener {
+
+        private final Album artist;
+
+        public MyMenuItemClickListener(Album artist) {
+            this.artist = artist;
+        }
+
+        /**
+         * This method will be invoked when a menu item is clicked if the item itself did
+         * not already handle the event.
+         *
+         * @param menuItem {@link MenuItem} that was clicked
+         * @return <code>true</code> if the event was handled, <code>false</code> otherwise.
+         */
+        @Override
+        public boolean onMenuItemClick(MenuItem menuItem) {
+            switch (menuItem.getItemId()) {
+                case R.id.action_play_all:
+                    mListener.onOverflowAlbumInteraction(artist);
+                    return true;
+                default:
+            }
+            return false;
+        }
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

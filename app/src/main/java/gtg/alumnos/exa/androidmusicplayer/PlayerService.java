@@ -349,6 +349,8 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
     }
 
     private void sendSongData() {
+        if (this.songList.isEmpty())
+            return;
         Song s = this.songList.get(index);
         if (this.playing)
             s.setSongStatus(Song.SongStatus.PLAYING);

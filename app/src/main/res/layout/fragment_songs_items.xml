@@ -65,9 +65,9 @@
                 android:id="@+id/play_flag"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignTop="@id/thumbnail"
-                android:layout_alignLeft="@id/thumbnail"
-                android:layout_margin="@dimen/ic_album_overflow_margin_top"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_margin="@dimen/smallAlbumArtMargin"
                 android:clickable="false"
                 app:fabSize="mini"
                 app:borderWidth="0dp"/>
