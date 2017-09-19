@@ -11,19 +11,17 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import gtg.alumnos.exa.androidmusicplayer.ItemFragment.OnListFragmentInteractionListener;
-
 /**
  * {@link RecyclerView.Adapter} that can display a {@link Song} and makes a call to the
- * specified {@link OnListFragmentInteractionListener}.
+ * specified {@link MyItemFragment.OnListFragmentInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
 public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
 
     private final List<Song> mValues;
-    private final OnListFragmentInteractionListener mListener;
+    private final MyItemFragment.OnListFragmentInteractionListener mListener;
 
-    public MyItemRecyclerViewAdapter(List<Song> items, OnListFragmentInteractionListener listener) {
+    public MyItemRecyclerViewAdapter(List<Song> items, MyItemFragment.OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
