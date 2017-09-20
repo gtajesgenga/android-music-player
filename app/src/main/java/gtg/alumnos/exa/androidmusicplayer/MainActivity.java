@@ -1,5 +1,6 @@
 package gtg.alumnos.exa.androidmusicplayer;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.design.widget.NavigationView;
@@ -17,8 +18,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         ArtistsFragment.OnListFragmenArtistInteractionListener,
         AlbumsFragment.OnListFragmentAlbumInteractionListener,
-        SongsFragment.OnListFragmentSongInteractionListener,
-        ItemFragment.OnListFragmentInteractionListener {
+        SongsFragment.OnListFragmentSongInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity
         StringBuffer selection = new StringBuffer();
         StringBuffer selectionArgs = new StringBuffer();
         if (item.getName() != null) {
-            selection.append(",").append(MediaStore.Audio.Media.ARTIST);
+            selection.append(",").append(MediaStore.Audio.Media.ARTIST).append("=?");
             selectionArgs.append(",").append(item.getName());
         }
 
@@ -117,8 +117,10 @@ public class MainActivity extends AppCompatActivity
         if (selectionArgs.toString().startsWith(","))
             selectionArgs.replace(0, selectionArgs.length(), selectionArgs.toString().replaceFirst(",", ""));
 
-        ItemFragment fragment = ItemFragment.newInstance(1, selection.toString(), selectionArgs.toString().split(","));
-        getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
+        Intent i = new Intent(this, PlayerActivity.class);
+        i.putExtra("selection", selection.toString().replace(",", " AND "));
+        i.putExtra("selectionArgs", selectionArgs.toString().split(","));
+        startActivity(i);
     }
 
     @Override
@@ -158,9 +160,6 @@ public class MainActivity extends AppCompatActivity
 
         if (selectionArgs.toString().startsWith(","))
             selectionArgs.replace(0, selectionArgs.length(), selectionArgs.toString().replaceFirst(",", ""));
-
-        ItemFragment fragment = ItemFragment.newInstance(1, selection.toString(), selectionArgs.toString().split(","));
-        getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
     }
 
     @Override
@@ -182,9 +181,9 @@ public class MainActivity extends AppCompatActivity
             selectionArgs.append(",").append(item.getAlbumArt());
         }
 
-        if (item.getUri() != null) {
+        if (item.getData() != null) {
             selection.append(",").append(MediaStore.Audio.Media.DATA);
-            selectionArgs.append(",").append(item.getUri());
+            selectionArgs.append(",").append(item.getData());
         }
 
         if (selection.toString().startsWith(","))
@@ -192,13 +191,5 @@ public class MainActivity extends AppCompatActivity
 
         if (selectionArgs.toString().startsWith(","))
             selectionArgs.replace(0, selectionArgs.length(),selectionArgs.toString().replaceFirst(",", ""));
-
-        ItemFragment fragment = ItemFragment.newInstance(1, selection.toString(), selectionArgs.toString().split(","));
-        getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
-    }
-
-    @Override
-    public void onListFragmentInteraction(Song item) {
-
     }
 }

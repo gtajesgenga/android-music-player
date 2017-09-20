@@ -147,7 +147,7 @@ public class SongsFragment extends Fragment {
                     song.setTitle(data.getString(index));
 
                 if ((index = data.getColumnIndex(MediaStore.Audio.Media.DATA)) != -1)
-                    song.setUri(data.getString(index));
+                    song.setData(data.getString(index));
 
                 if ((index = data.getColumnIndex(MediaStore.Audio.Media.DURATION)) != -1)
                     song.setDuration(data.getLong(index));
