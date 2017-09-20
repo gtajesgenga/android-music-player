@@ -168,22 +168,22 @@ public class MainActivity extends AppCompatActivity
         StringBuffer selection = new StringBuffer();
         StringBuffer selectionArgs = new StringBuffer();
         if (item.getAlbum_id() != null) {
-            selection.append(",").append(MediaStore.Audio.Media.ALBUM_ID);
+            selection.append(",").append(MediaStore.Audio.Media.ALBUM_ID).append("=?");
             selectionArgs.append(",").append(item.getAlbum_id().toString());
         }
 
         if (item.getArtist() != null) {
-            selection.append(",").append(MediaStore.Audio.Media.ARTIST);
+            selection.append(",").append(MediaStore.Audio.Media.ARTIST).append("=?");
             selectionArgs.append(",").append(item.getArtist());
         }
 
         if (item.getAlbumArt() != null) {
-            selection.append(",").append(MediaStore.Audio.AlbumColumns.ALBUM_ART);
+            selection.append(",").append(MediaStore.Audio.AlbumColumns.ALBUM_ART).append("=?");
             selectionArgs.append(",").append(item.getAlbumArt());
         }
 
         if (item.getUri() != null) {
-            selection.append(",").append(MediaStore.Audio.Media.DATA);
+            selection.append(",").append(MediaStore.Audio.Media.DATA).append("=?");
             selectionArgs.append(",").append(item.getUri());
         }
 
@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity
         if (selectionArgs.toString().startsWith(","))
             selectionArgs.replace(0, selectionArgs.length(),selectionArgs.toString().replaceFirst(",", ""));
 
-        ItemFragment fragment = ItemFragment.newInstance(1, selection.toString(), selectionArgs.toString().split(","));
+        ItemFragment fragment = ItemFragment.newInstance(1, selection.toString().replace(",", " AND "), selectionArgs.toString().split(","));
         getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
     }
 

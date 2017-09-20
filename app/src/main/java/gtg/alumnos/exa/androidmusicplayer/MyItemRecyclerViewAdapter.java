@@ -13,15 +13,15 @@ import java.util.List;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link Song} and makes a call to the
- * specified {@link MyItemFragment.OnListFragmentInteractionListener}.
+ * specified {@link ItemFragment.OnListFragmentInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
 public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
 
     private final List<Song> mValues;
-    private final MyItemFragment.OnListFragmentInteractionListener mListener;
+    private final ItemFragment.OnListFragmentInteractionListener mListener;
 
-    public MyItemRecyclerViewAdapter(List<Song> items, MyItemFragment.OnListFragmentInteractionListener listener) {
+    public MyItemRecyclerViewAdapter(List<Song> items, ItemFragment.OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }

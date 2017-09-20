@@ -1,19 +1,28 @@
 package gtg.alumnos.exa.androidmusicplayer;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.database.Cursor;
-import android.net.Uri;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.session.MediaSessionManager;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,16 +36,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A fragment representing a list of Items.
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
- * interface.
+ * Created by gus on 13/09/17.
  */
-public class ItemFragment extends Fragment {
 
+public class ItemFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     private static final String ARG_SELECTION = "selection";
     private static final String ARG_SELECTIONARGS = "selection-args";
+
+    public static final String Broadcast_PLAY_NEW_AUDIO = "gtg.alumnos.exa.androidmusicplayer.PlayNewAudio";
+    public static final String Broadcast_RESUME_AUDIO = "gtg.alumnos.exa.androidmusicplayer.ResumeAudio";
+    public static final String Broadcast_PAUSE_AUDIO = "gtg.alumnos.exa.androidmusicplayer.PauseAudio";
     private ImageView art;
     private ImageButton playPause;
     private ImageButton prev;
@@ -53,41 +63,17 @@ public class ItemFragment extends Fragment {
     private String album_id;
     private String albumArt;
     private boolean playing;
-    private LocalBroadcastManager localBroadcastManager;
-    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().endsWith(PlayerService.CLOSE_OK)){
-                ItemFragment.this.getActivity().onBackPressed();
-                return;
-            }
+    private PlayerService player;
+    private boolean serviceBound = false;
+    private int audioIndex = -1;
+    private Song activeSong;
 
-            if(intent.getAction().endsWith(PlayerService.SEND_LIST)){
-                mData = (List<Song>) intent.getSerializableExtra(PlayerService.EXTRA_LIST);
-                adapter = new MyItemRecyclerViewAdapter(mData, mListener);
-                recyclerView.setAdapter(adapter);
-                return;
-            }
-            playing = intent.getBooleanExtra(PlayerService.EXTRA_PLAYING,false);
-            if(playing) {
-                playPause.setImageResource(android.R.drawable.ic_media_pause);
-            } else {
-                playPause.setImageResource(android.R.drawable.ic_media_play);
-            }
-            Song s = (Song) intent.getSerializableExtra(PlayerService.EXTRA_SONG);
-            if (s.getAlbumArt() != null) {
-                art.setImageURI(Uri.parse(s.getAlbumArt()));
-                art.setVisibility(View.VISIBLE);
-            } else
-                art.setVisibility(View.INVISIBLE);
-            for (Song item : mData) {
-                if (!item.equals(s))
-                    item.setSongStatus(Song.SongStatus.STOPED);
-            }
-            mData.get(mData.indexOf(s)).setSongStatus(s.getSongStatus());
-            adapter.notifyDataSetChanged();
-        }
-    };
+    //MediaSession
+    private MediaSessionManager mediaSessionManager;
+    private MediaSessionCompat mediaSession;
+    private MediaControllerCompat.TransportControls transportControls;
+    //AudioPlayer notification ID
+    private static final int NOTIFICATION_ID = 101;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -118,10 +104,6 @@ public class ItemFragment extends Fragment {
             selectionArgs = getArguments().getStringArray(ARG_SELECTIONARGS);
         }
 
-        if(this.localBroadcastManager==null) {
-            this.localBroadcastManager = LocalBroadcastManager.getInstance(this.getActivity());
-        }
-
         for (int i = 0; i < selection.split(",").length; i++) {
             switch (selection.split(",")[i]) {
                 case MediaStore.Audio.Media.ARTIST:
@@ -143,41 +125,15 @@ public class ItemFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
+        if (savedInstanceState != null)
+            serviceBound = savedInstanceState.getBoolean("ServiceState");
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
-
+        getLoaderManager().initLoader(0, null, new ItemsCursorLoaderCB());
         art = (ImageView) view.findViewById(R.id.art);
-
         playPause = (ImageButton) view.findViewById(R.id.btn_play);
         prev = (ImageButton) view.findViewById(R.id.btn_prev);
         next = (ImageButton) view.findViewById(R.id.btn_next);
-
-        this.playPause.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent();
-                if(playing)
-                    i.setAction(PlayerService.PAUSE_PLAYING);
-                else
-                    i.setAction(PlayerService.START_PLAYING);
-                localBroadcastManager.sendBroadcast(i);
-            }
-        });
-
-        this.prev.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                localBroadcastManager.sendBroadcast(
-                        new Intent(PlayerService.PREV_SONG));
-            }
-        });
-
-        this.next.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                localBroadcastManager.sendBroadcast(
-                        new Intent(PlayerService.NEXT_SONG));
-            }
-        });
 
         // Set the adapter
         if (view.findViewById(R.id.list) != null && view.findViewById(R.id.list) instanceof RecyclerView) {
@@ -188,26 +144,59 @@ public class ItemFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
+            adapter = new MyItemRecyclerViewAdapter(mData, mListener);
+            recyclerView.setAdapter(adapter);
         }
-
-        Intent intent = new Intent(this.getActivity(),  PlayerService.class);
-        intent.putExtra(MediaStore.Audio.Media.ARTIST, artist);
-        intent.putExtra(MediaStore.Audio.Media.ALBUM_ID, album_id);
-        intent.putExtra(MediaStore.Audio.AlbumColumns.ALBUM_ART, albumArt);
-        intent.putExtra(MediaStore.Audio.Media.DATA, data);
-        this.getActivity().startService(intent);
 
         return view;
     }
 
+    /**
+     * Called when the fragment is no longer in use.  This is called
+     * after {@link #onStop()} and before {@link #onDetach()}.
+     */
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (serviceBound) {
+            this.getActivity().unbindService(serviceConnection);
+            //service is active
+            player.stopSelf();
+        }
+    }
+
+    /**
+     * Called to ask the fragment to save its current dynamic state, so it
+     * can later be reconstructed in a new instance of its process is
+     * restarted.  If a new instance of the fragment later needs to be
+     * created, the data you place in the Bundle here will be available
+     * in the Bundle given to {@link #onCreate(Bundle)},
+     * {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}, and
+     * {@link #onActivityCreated(Bundle)}.
+     * <p>
+     * <p>This corresponds to {@link Activity#onSaveInstanceState(Bundle)
+     * Activity.onSaveInstanceState(Bundle)} and most of the discussion there
+     * applies here as well.  Note however: <em>this method may be called
+     * at any time before {@link #onDestroy()}</em>.  There are many situations
+     * where a fragment may be mostly torn down (such as when placed on the
+     * back stack with no UI showing), but its state will not be saved until
+     * its owning activity actually needs to save its state.
+     *
+     * @param savedInstanceState Bundle in which to place your saved state.
+     */
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putBoolean("ServiceState", serviceBound);
+        super.onSaveInstanceState(savedInstanceState);
+    }
 
     @Override
-    public void onAttach(Activity context) {
-        super.onAttach(context);
-        if (context instanceof OnListFragmentInteractionListener) {
-            mListener = (OnListFragmentInteractionListener) context;
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if (activity instanceof OnListFragmentInteractionListener) {
+            mListener = (OnListFragmentInteractionListener) activity;
         } else {
-            throw new RuntimeException(context.toString()
+            throw new RuntimeException(activity.toString()
                     + " must implement OnListFragmentInteractionListener");
         }
     }
@@ -227,12 +216,255 @@ public class ItemFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        IntentFilter intentFilter =new IntentFilter(PlayerService.PLAYING_INFO);
-        intentFilter.addAction(PlayerService.CLOSE_OK);
-        intentFilter.addAction(PlayerService.SEND_LIST);
-        if(this.localBroadcastManager!= null)
-            this.localBroadcastManager.registerReceiver(this.broadcastReceiver,
-                    intentFilter);
+    }
+
+    //Binding this Client to the AudioPlayer Service
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            PlayerService.LocalBinder binder = (PlayerService.LocalBinder) service;
+            player = binder.getService();
+            serviceBound = true;
+
+            if (mediaSessionManager == null) {
+                try {
+                    initMediaSession();
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            buildNotification(PlaybackStatus.PLAYING);
+
+            Intent i = new Intent();
+            i.setAction(player.ACTION_PLAY);
+            handleIncomingActions(i);
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            serviceBound = false;
+        }
+    };
+
+    private void initMediaSession() throws RemoteException {
+        if (mediaSessionManager != null) return; //mediaSessionManager exists
+
+        mediaSessionManager = (MediaSessionManager) player.getSystemService(Context.MEDIA_SESSION_SERVICE);
+        // Create a new MediaSession
+        mediaSession = new MediaSessionCompat(player.getApplicationContext(), "AudioPlayer");
+        //Get MediaSessions transport controls
+        transportControls = mediaSession.getController().getTransportControls();
+        //set MediaSession -> ready to receive media commands
+        mediaSession.setActive(true);
+        //indicate that the MediaSession handles transport control commands
+        // through its MediaSessionCompat.Callback.
+        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+
+        //Set mediaSession's MetaData
+        updateMetaData();
+
+        // Attach Callback to receive MediaSession updates
+        mediaSession.setCallback(new MediaSessionCompat.Callback() {
+            // Implement callbacks
+            @Override
+            public void onPlay() {
+                super.onPlay();
+                resumeMedia();
+                buildNotification(PlaybackStatus.PLAYING);
+            }
+
+            @Override
+            public void onPause() {
+                super.onPause();
+                pauseMedia();
+                buildNotification(PlaybackStatus.PAUSED);
+            }
+
+            @Override
+            public void onSkipToNext() {
+                super.onSkipToNext();
+                skipToNext();
+                updateMetaData();
+                buildNotification(PlaybackStatus.PLAYING);
+            }
+
+            @Override
+            public void onSkipToPrevious() {
+                super.onSkipToPrevious();
+                skipToPrevious();
+                updateMetaData();
+                buildNotification(PlaybackStatus.PLAYING);
+            }
+
+            @Override
+            public void onStop() {
+                super.onStop();
+                removeNotification();
+                //Stop the service
+                player.stopSelf();
+            }
+
+            @Override
+            public void onSeekTo(long position) {
+                super.onSeekTo(position);
+            }
+        });
+    }
+
+    private void handleIncomingActions(Intent playbackAction) {
+        if (playbackAction == null || playbackAction.getAction() == null) return;
+
+        String actionString = playbackAction.getAction();
+        if (actionString.equalsIgnoreCase(player.ACTION_PLAY)) {
+            transportControls.play();
+        } else if (actionString.equalsIgnoreCase(player.ACTION_PAUSE)) {
+            transportControls.pause();
+        } else if (actionString.equalsIgnoreCase(player.ACTION_NEXT)) {
+            transportControls.skipToNext();
+        } else if (actionString.equalsIgnoreCase(player.ACTION_PREVIOUS)) {
+            transportControls.skipToPrevious();
+        } else if (actionString.equalsIgnoreCase(player.ACTION_STOP)) {
+            transportControls.stop();
+        }
+    }
+
+    private void updateMetaData() {
+        Bitmap albumArt = BitmapFactory.decodeFile(activeSong.getAlbumArt());
+        mediaSession.setMetadata(new MediaMetadataCompat.Builder()
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
+                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, activeSong.getArtist())
+                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, activeSong.getAlbum())
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, activeSong.getTitle())
+                .build());
+    }
+
+
+    private void playAudio(int audioIndex) {
+        if (audioIndex < 0 || audioIndex >= mData.size())
+            return;
+
+        activeSong = mData.get(audioIndex);
+        //Check is service is active
+        if (!serviceBound) {
+            Intent playerIntent = new Intent(this.getActivity(), PlayerService.class);
+            playerIntent.putExtra("media", activeSong.getUri());
+            this.getActivity().startService(playerIntent);
+            this.getActivity().bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        } else {
+            Intent broadcastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
+            broadcastIntent.putExtra("media", activeSong.getUri());
+            player.sendBroadcast(broadcastIntent);
+        }
+    }
+
+    private void skipToNext() {
+        playAudio(++audioIndex);
+    }
+
+    private void skipToPrevious() {
+        playAudio(--audioIndex);
+    }
+
+    private void resumeMedia() {
+        if (!serviceBound) {
+            Intent playerIntent = new Intent(this.getActivity(), PlayerService.class);
+            playerIntent.putExtra("media", activeSong.getUri());
+            this.getActivity().startService(playerIntent);
+            this.getActivity().bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        } else {
+            Intent broadcastIntent = new Intent(Broadcast_RESUME_AUDIO);
+            player.sendBroadcast(broadcastIntent);
+        }
+    }
+
+    private void pauseMedia() {
+        if (!serviceBound) {
+            Intent playerIntent = new Intent(this.getActivity(), PlayerService.class);
+            playerIntent.putExtra("media", activeSong.getUri());
+            this.getActivity().startService(playerIntent);
+            this.getActivity().bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        } else {
+            Intent broadcastIntent = new Intent(Broadcast_PAUSE_AUDIO);
+            player.sendBroadcast(broadcastIntent);
+        }
+    }
+
+
+    private void buildNotification(PlaybackStatus playbackStatus) {
+
+        int notificationAction = android.R.drawable.ic_media_pause;//needs to be initialized
+        PendingIntent play_pauseAction = null;
+
+        //Build a new notification according to the current state of the MediaPlayer
+        if (playbackStatus == PlaybackStatus.PLAYING) {
+            notificationAction = android.R.drawable.ic_media_pause;
+            //create the pause action
+            play_pauseAction = playbackAction(1);
+        } else if (playbackStatus == PlaybackStatus.PAUSED) {
+            notificationAction = android.R.drawable.ic_media_play;
+            //create the play action
+            play_pauseAction = playbackAction(0);
+        }
+
+        Bitmap largeIcon = BitmapFactory.decodeFile(activeSong.getAlbumArt()); //replace with your own image
+
+        // Create a new Notification
+        NotificationCompat.Builder notificationBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(this.getActivity())
+                .setShowWhen(false)
+                // Set the Notification style
+                .setStyle(new NotificationCompat.MediaStyle()
+                        // Attach our MediaSession token
+                        .setMediaSession(mediaSession.getSessionToken())
+                        // Show our playback controls in the compact notification view.
+                        .setShowActionsInCompactView(0, 1, 2))
+                // Set the Notification color
+                .setColor(getResources().getColor(R.color.colorPrimary))
+                // Set the large and small icons
+                .setLargeIcon(largeIcon)
+                .setSmallIcon(android.R.drawable.stat_sys_headset)
+                // Set Notification content information
+                .setContentText(activeSong.getArtist())
+                .setContentTitle(activeSong.getAlbum())
+                .setContentInfo(activeSong.getTitle())
+                // Add playback actions
+                .addAction(android.R.drawable.ic_media_previous, "previous", playbackAction(3))
+                .addAction(notificationAction, "pause", play_pauseAction)
+                .addAction(android.R.drawable.ic_media_next, "next", playbackAction(2));
+
+        ((NotificationManager) player.getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, notificationBuilder.build());
+    }
+
+    private void removeNotification() {
+        NotificationManager notificationManager = (NotificationManager) player.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancel(NOTIFICATION_ID);
+    }
+
+    private PendingIntent playbackAction(int actionNumber) {
+        Intent playbackAction = new Intent(this.getActivity(), PlayerService.class);
+        switch (actionNumber) {
+            case 0:
+                // Play
+                playbackAction.setAction(player.ACTION_PLAY);
+                return PendingIntent.getService(player, actionNumber, playbackAction, 0);
+            case 1:
+                // Pause
+                playbackAction.setAction(player.ACTION_PAUSE);
+                return PendingIntent.getService(player, actionNumber, playbackAction, 0);
+            case 2:
+                // Next track
+                playbackAction.setAction(player.ACTION_NEXT);
+                return PendingIntent.getService(player, actionNumber, playbackAction, 0);
+            case 3:
+                // Previous track
+                playbackAction.setAction(player.ACTION_PREVIOUS);
+                return PendingIntent.getService(player, actionNumber, playbackAction, 0);
+            default:
+                break;
+        }
+        return null;
     }
 
     /**
@@ -250,57 +482,45 @@ public class ItemFragment extends Fragment {
         void onListFragmentInteraction(Song item);
     }
 
-    protected class SongCursorLoaderCB implements LoaderManager.LoaderCallbacks<Cursor>{
-
+    private class ItemsCursorLoaderCB implements LoaderManager.LoaderCallbacks<Cursor> {
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
             return new CursorLoader(ItemFragment.this.getActivity(),
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    new String[]{"_id",MediaStore.Audio.Media.TITLE, MediaStore.Audio.Media.DATA, MediaStore.Audio.Media.DURATION, MediaStore.Audio.Media.ARTIST, MediaStore.Audio.Media.ARTIST_ID, MediaStore.Audio.Media.ALBUM, MediaStore.Audio.Media.ALBUM_ID}, ItemFragment.this.selection, ItemFragment.this.selectionArgs, null);
+                    new String[]{"_id", MediaStore.Audio.Media.TITLE, MediaStore.Audio.Media.ARTIST,
+                            MediaStore.Audio.Media.DATA, MediaStore.Audio.Media.ALBUM,
+                            MediaStore.Audio.Media.DURATION, MediaStore.Audio.Media.ALBUM_ID},
+                    selection, selectionArgs, null);
         }
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
             ItemFragment.this.mData.clear();
-            int index;
             for (data.moveToFirst(); !data.isAfterLast(); data.moveToNext()) {
-                Song song = new Song();
-
-                if ((index = data.getColumnIndex(MediaStore.Audio.Media.TITLE)) != -1)
-                    song.setTitle(data.getString(index));
-
-                if ((index = data.getColumnIndex(MediaStore.Audio.Media.DATA)) != -1)
-                    song.setUri(data.getString(index));
-
-                if ((index = data.getColumnIndex(MediaStore.Audio.Media.DURATION)) != -1)
-                    song.setDuration(data.getLong(index));
-
-                if ((index = data.getColumnIndex(MediaStore.Audio.Media.ARTIST)) != -1)
-                    song.setArtist(data.getString(index));
-
-                if ((index = data.getColumnIndex(MediaStore.Audio.Media.ARTIST_ID)) != -1)
-                    song.setArtist_id(data.getLong(index));
-
-                if ((index = data.getColumnIndex(MediaStore.Audio.Media.ALBUM)) != -1)
-                    song.setAlbum(data.getString(index));
-
-                if ((index = data.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)) != -1)
-                    song.setAlbum_id(data.getLong(index));
-
-                Cursor cursor = ItemFragment.this.getActivity().getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-                        new String[] {MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM_ART},
-                        MediaStore.Audio.Albums._ID+ "=?",
-                        new String[] {String.valueOf(song.getAlbum_id())},
+                Song s = new Song();
+                s.setUri(data.getString(data.getColumnIndex(MediaStore.Audio.Media.DATA)));
+                s.setTitle(data.getString(data.getColumnIndex(MediaStore.Audio.Media.TITLE)));
+                s.setDuration(data.getLong(data.getColumnIndex(MediaStore.Audio.Media.DURATION)));
+                s.setArtist(data.getString(data.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
+                s.setAlbum_id(data.getLong(data.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)));
+                s.setAlbum(data.getString(data.getColumnIndex(MediaStore.Audio.Media.ALBUM)));
+                Cursor albumCursor = ItemFragment.this.getActivity().getContentResolver().query(
+                        MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                        new String[]{MediaStore.Audio.Albums.ALBUM_ART},
+                        MediaStore.Audio.Albums._ID + " = ?",
+                        new String[]{Long.toString(data.getLong(data.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)))},
                         null);
-
-                if (cursor.moveToFirst()) {
-                    song.setAlbumArt(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART)));
+                while (albumCursor.moveToNext()) {
+                    s.setAlbumArt(albumCursor.getString(albumCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART)));
                 }
-                cursor.close();
-
-                ItemFragment.this.mData.add(song);
+                albumCursor.close();
+                ItemFragment.this.mData.add(s);
             }
-            adapter.notifyDataSetChanged();
+            data.close();
+            if (!ItemFragment.this.mData.isEmpty()) {
+                audioIndex = 0;
+                playAudio(audioIndex);
+            }
         }
 
         @Override
@@ -308,5 +528,4 @@ public class ItemFragment extends Fragment {
             ItemFragment.this.mData.clear();
         }
     }
-
 }
