@@ -62,7 +62,7 @@ public class MediaPlayerService extends Service
         public void onReceive(Context context, Intent intent) {
 
             //Get the new media index form SharedPreferences
-            audioIndex = new StorageUtil(getApplicationContext()).loadAudioIndex();
+            audioIndex = intent.getIntExtra("audioIndex", audioIndex);
             if (audioIndex != -1 && audioIndex < audioList.size()) {
                 //index is in a valid range
                 activeAudio = audioList.get(audioIndex);
@@ -82,7 +82,7 @@ public class MediaPlayerService extends Service
 
     private void register_playNewAudio() {
         //Register playNewMedia receiver
-        IntentFilter filter = new IntentFilter(MainActivity.Broadcast_PLAY_NEW_AUDIO);
+        IntentFilter filter = new IntentFilter(PlayerActivity.Broadcast_PLAY_NEW_AUDIO);
         registerReceiver(playNewAudio, filter);
     }
 
@@ -105,10 +105,9 @@ public class MediaPlayerService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
-            //Load data from SharedPreferences
-            StorageUtil storage = new StorageUtil(getApplicationContext());
-            audioList = storage.loadAudio();
-            audioIndex = storage.loadAudioIndex();
+            if (intent.getSerializableExtra("audioList") != null)
+                audioList = (ArrayList<Song>) intent.getSerializableExtra("audioList");
+            audioIndex = intent.getIntExtra("audioIndex", audioIndex);
 
             if (audioIndex != -1 && audioIndex < audioList.size()) {
                 //index is in a valid range
@@ -245,7 +244,7 @@ public class MediaPlayerService extends Service
 
     private void updateMetaData() {
         Bitmap albumArt = BitmapFactory.decodeResource(getResources(),
-                R.drawable.image); //replace with medias albumArt
+                R.drawable.image5); //replace with medias albumArt
         // Update the current metadata
         mediaSession.setMetadata(new MediaMetadataCompat.Builder()
                 .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
@@ -293,9 +292,6 @@ public class MediaPlayerService extends Service
             activeAudio = audioList.get(++audioIndex);
         }
 
-        //Update stored index
-        new StorageUtil(getApplicationContext()).storeAudioIndex(audioIndex);
-
         stopMedia();
         //reset mediaPlayer
         mediaPlayer.reset();
@@ -313,9 +309,6 @@ public class MediaPlayerService extends Service
             //get previous in playlist
             activeAudio = audioList.get(--audioIndex);
         }
-
-        //Update stored index
-        new StorageUtil(getApplicationContext()).storeAudioIndex(audioIndex);
 
         stopMedia();
         //reset mediaPlayer
@@ -340,7 +333,7 @@ public class MediaPlayerService extends Service
         }
 
         Bitmap largeIcon = BitmapFactory.decodeResource(getResources(),
-                R.drawable.image); //replace with your own image
+                R.drawable.image5); //replace with your own image
 
         // Create a new Notification
         NotificationCompat.Builder notificationBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(this)
@@ -504,17 +497,9 @@ public class MediaPlayerService extends Service
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
-        stopMedia();
-
-//        if(index<songList.size()-1)
-//            PlayerService.this.nextSong();
-//        else {
-//            //si no ha mas canciones
-//            //dejo de preproducir y me paro devuelta al principio
-//            playing = false;
-//            index = 0;
-//            sendSongData();
-//        }
+        skipToNext();
+        updateMetaData();
+        buildNotification(PlaybackStatus.PLAYING);
     }
 
     @Override

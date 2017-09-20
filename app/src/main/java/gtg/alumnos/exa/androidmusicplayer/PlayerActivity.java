@@ -5,12 +5,18 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.ImageView;
 
 import java.util.ArrayList;
 
@@ -37,11 +43,19 @@ public class PlayerActivity extends AppCompatActivity {
     private ArrayList<Song> audioList;
     private String selection;
     private String[] selectionArgs;
+    ImageView collapsingImageView;
+    int imageIndex = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.player_activity);
+//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
+        collapsingImageView = (ImageView) findViewById(R.id.collapsingImageView);
 
+        loadCollapsingImage(imageIndex);
         Intent i = getIntent();
 
         if (i != null) {
@@ -50,7 +64,44 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         loadAudio();
-        playAudio(audioList.get(0).getData());
+        initRecyclerView();
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (imageIndex == 4) {
+                    imageIndex = 0;
+                    loadCollapsingImage(imageIndex);
+                } else {
+                    loadCollapsingImage(++imageIndex);
+                }
+            }
+        });
+
+        playAudio(0);
+    }
+
+    private void initRecyclerView() {
+        if (audioList.size() > 0) {
+            RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
+            RecyclerView_Adapter adapter = new RecyclerView_Adapter(audioList, getApplication());
+            recyclerView.setAdapter(adapter);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            recyclerView.addOnItemTouchListener(new CustomTouchListener(this, new onItemClickListener() {
+                @Override
+                public void onClick(View view, int index) {
+                    playAudio(index);
+                }
+            }));
+
+        }
+    }
+
+
+    private void loadCollapsingImage(int i) {
+        TypedArray array = getResources().obtainTypedArray(R.array.images);
+        collapsingImageView.setImageDrawable(array.getDrawable(i));
     }
 
     @Override
@@ -77,10 +128,13 @@ public class PlayerActivity extends AppCompatActivity {
     private void playAudio(int audioIndex) {
         if (!serviceBound) {
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
+            playerIntent.putExtra("audioIndex", audioIndex);
+            playerIntent.putExtra("audioList", audioList);
             startService(playerIntent);
             bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
         } else {
             Intent broadcastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
+            broadcastIntent.putExtra("audioIndex", audioIndex);
             sendBroadcast(broadcastIntent);
         }
     }
