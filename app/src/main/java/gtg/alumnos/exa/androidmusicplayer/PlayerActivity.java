@@ -43,6 +43,7 @@ public class PlayerActivity extends AppCompatActivity {
     private ArrayList<Song> audioList;
     private String selection;
     private String[] selectionArgs;
+    private String albumArt;
     ImageView collapsingImageView;
     int imageIndex = 0;
 
@@ -55,29 +56,33 @@ public class PlayerActivity extends AppCompatActivity {
 //        setSupportActionBar(toolbar);
         collapsingImageView = (ImageView) findViewById(R.id.collapsingImageView);
 
-        loadCollapsingImage(imageIndex);
         Intent i = getIntent();
 
         if (i != null) {
             selection = i.getStringExtra("selection");
             selectionArgs = i.getStringArrayExtra("selectionArgs");
+            albumArt = i.getStringExtra("albumArt");
         }
+
+        if (albumArt == null) {
+            loadCollapsingImage(imageIndex);
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (imageIndex == 4) {
+                        imageIndex = 0;
+                        loadCollapsingImage(imageIndex);
+                    } else {
+                        loadCollapsingImage(++imageIndex);
+                    }
+                }
+            });
+        } else
+            collapsingImageView.setImageURI(Uri.parse(albumArt));
 
         loadAudio();
         initRecyclerView();
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (imageIndex == 4) {
-                    imageIndex = 0;
-                    loadCollapsingImage(imageIndex);
-                } else {
-                    loadCollapsingImage(++imageIndex);
-                }
-            }
-        });
 
         playAudio(0);
     }
@@ -157,7 +162,7 @@ public class PlayerActivity extends AppCompatActivity {
                 String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
 
                 // Save to audioList
-                audioList.add(new Song(title, artist, album, data, null));
+                audioList.add(new Song(title, artist, album, data, albumArt));
             }
         }
         cursor.close();

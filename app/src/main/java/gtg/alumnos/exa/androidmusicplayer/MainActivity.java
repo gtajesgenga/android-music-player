@@ -103,6 +103,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onListFragmentAlbumInteraction(Album item) {
+        StringBuffer selection = new StringBuffer(MediaStore.Audio.Media.ALBUM_ID);
+        selection.append("=?");
+        SongsFragment fragment = SongsFragment.newInstance(1, selection.toString(), new String[]{item.getId().toString()});
+        getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
+    }
+
+    @Override
     public void onOverflowArtistInteraction(Artist item) {
         StringBuffer selection = new StringBuffer();
         StringBuffer selectionArgs = new StringBuffer();
@@ -124,35 +132,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onListFragmentAlbumInteraction(Album item) {
-        StringBuffer selection = new StringBuffer(MediaStore.Audio.Media.ALBUM_ID);
-        selection.append("=?");
-        SongsFragment fragment = SongsFragment.newInstance(1, selection.toString(), new String[]{item.getId().toString()});
-        getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
-    }
-
-    @Override
     public void onOverflowAlbumInteraction(Album item) {
         StringBuffer selection = new StringBuffer();
         StringBuffer selectionArgs = new StringBuffer();
-//        if (item.getAlbum() != null) {
-//            selection.append(",").append(MediaStore.Audio.Media.ALBUM);
-//            selectionArgs.append(",").append(item.getAlbum());
-//        }
 
         if (item.getId() != null) {
-            selection.append(",").append(MediaStore.Audio.Media.ALBUM_ID);
+            selection.append(",").append(MediaStore.Audio.Media.ALBUM_ID).append("=?");
             selectionArgs.append(",").append(item.getId().toString());
-        }
-
-//        if (item.getArtist() != null) {
-//            selection.append(",").append(MediaStore.Audio.Media.ARTIST);
-//            selectionArgs.append(",").append(item.getArtist());
-//        }
-
-        if (item.getAlbum_art() != null) {
-            selection.append(",").append(MediaStore.Audio.AlbumColumns.ALBUM_ART);
-            selectionArgs.append(",").append(item.getAlbum_art());
         }
 
         if (selection.toString().startsWith(","))
@@ -160,6 +146,12 @@ public class MainActivity extends AppCompatActivity
 
         if (selectionArgs.toString().startsWith(","))
             selectionArgs.replace(0, selectionArgs.length(), selectionArgs.toString().replaceFirst(",", ""));
+
+        Intent i = new Intent(this, PlayerActivity.class);
+        i.putExtra("selection", selection.toString().replace(",", " AND "));
+        i.putExtra("selectionArgs", selectionArgs.toString().split(","));
+        i.putExtra("albumArt", item.getAlbum_art());
+        startActivity(i);
     }
 
     @Override
@@ -167,22 +159,17 @@ public class MainActivity extends AppCompatActivity
         StringBuffer selection = new StringBuffer();
         StringBuffer selectionArgs = new StringBuffer();
         if (item.getAlbum_id() != null) {
-            selection.append(",").append(MediaStore.Audio.Media.ALBUM_ID);
+            selection.append(",").append(MediaStore.Audio.Media.ALBUM_ID).append("=?");
             selectionArgs.append(",").append(item.getAlbum_id().toString());
         }
 
         if (item.getArtist() != null) {
-            selection.append(",").append(MediaStore.Audio.Media.ARTIST);
+            selection.append(",").append(MediaStore.Audio.Media.ARTIST).append("=?");
             selectionArgs.append(",").append(item.getArtist());
         }
 
-        if (item.getAlbumArt() != null) {
-            selection.append(",").append(MediaStore.Audio.AlbumColumns.ALBUM_ART);
-            selectionArgs.append(",").append(item.getAlbumArt());
-        }
-
         if (item.getData() != null) {
-            selection.append(",").append(MediaStore.Audio.Media.DATA);
+            selection.append(",").append(MediaStore.Audio.Media.DATA).append("=?");
             selectionArgs.append(",").append(item.getData());
         }
 
@@ -191,5 +178,11 @@ public class MainActivity extends AppCompatActivity
 
         if (selectionArgs.toString().startsWith(","))
             selectionArgs.replace(0, selectionArgs.length(),selectionArgs.toString().replaceFirst(",", ""));
+
+        Intent i = new Intent(this, PlayerActivity.class);
+        i.putExtra("selection", selection.toString().replace(",", " AND "));
+        i.putExtra("selectionArgs", selectionArgs.toString().split(","));
+        i.putExtra("albumArt", item.getAlbumArt());
+        startActivity(i);
     }
 }
