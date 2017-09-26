@@ -112,17 +112,8 @@ public class MyAlbumsRecyclerViewAdapter extends RecyclerView.Adapter<MyAlbumsRe
          */
         @Override
         public boolean onMenuItemClick(MenuItem menuItem) {
-            switch (menuItem.getItemId()) {
-                case R.id.action_play_all:
-                    mListener.onOverflowAlbumInteraction(album, menuItem.getItemId());
-                    return true;
-
-                case R.id.action_add_playlist:
-                    mListener.onOverflowAlbumInteraction(album, menuItem.getItemId());
-                    return true;
-                default:
-            }
-            return false;
+            mListener.onOverflowAlbumInteraction(album, menuItem.getItemId());
+            return true;
         }
     }
 

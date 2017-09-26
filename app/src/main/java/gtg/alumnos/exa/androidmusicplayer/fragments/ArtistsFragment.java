@@ -121,7 +121,7 @@ public class ArtistsFragment extends Fragment {
         // TODO: Update argument type and name
         void onListFragmentArtistInteraction(Artist item);
 
-        void onOverflowArtistInteraction(Artist item);
+        void onOverflowArtistInteraction(Artist item, int itemId);
     }
 
     protected class ArtistCursorLoaderCB implements LoaderManager.LoaderCallbacks<Cursor>{

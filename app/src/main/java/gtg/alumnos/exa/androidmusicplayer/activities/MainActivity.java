@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onOverflowArtistInteraction(Artist item) {
+    public void onOverflowArtistInteraction(Artist item, int itemId) {
         StringBuffer selection = new StringBuffer();
         StringBuffer selectionArgs = new StringBuffer();
         if (item.getName() != null) {
@@ -143,10 +143,33 @@ public class MainActivity extends AppCompatActivity
         if (selectionArgs.toString().startsWith(","))
             selectionArgs.replace(0, selectionArgs.length(), selectionArgs.toString().replaceFirst(",", ""));
 
-        Intent i = new Intent(this, PlayerActivity.class);
-        i.putExtra(PlayerActivity.SELECTION, selection.toString().replace(",", " AND "));
-        i.putExtra(PlayerActivity.SELECTION_ARGS, selectionArgs.toString().split(","));
-        startActivity(i);
+        if (itemId == R.id.action_play_all) {
+            Intent i = new Intent(this, PlayerActivity.class);
+            i.putExtra(PlayerActivity.SELECTION, selection.toString().replace(",", " AND "));
+            i.putExtra(PlayerActivity.SELECTION_ARGS, selectionArgs.toString().split(","));
+            startActivity(i);
+        } else if (itemId == R.id.action_add_playlist) {
+            Cursor cursor = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null,
+                    MediaStore.Audio.Media.IS_MUSIC + "!= 0" + " AND " + selection.toString().replace(",", " AND "),
+                    selectionArgs.toString().split(","),
+                    MediaStore.Audio.Media.TITLE + " ASC");
+            // Save to audioList
+            ArrayList<Song> audioList = new ArrayList<>();
+            while (cursor.moveToNext()) {
+                String data = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+                String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
+                String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+                Long duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
+
+                audioList.add(new Song(title, artist, album, data, null, duration));
+            }
+            cursor.close();
+
+            DialogFragment dialogFragment = PlaylistSelectorDialogFragment.newInstance(audioList);
+            dialogFragment.show(getSupportFragmentManager(), "Dialog");
+
+        }
     }
 
     @Override

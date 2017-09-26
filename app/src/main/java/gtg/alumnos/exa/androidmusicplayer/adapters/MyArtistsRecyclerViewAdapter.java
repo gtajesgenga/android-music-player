@@ -100,13 +100,8 @@ public class MyArtistsRecyclerViewAdapter extends RecyclerView.Adapter<MyArtists
          */
         @Override
         public boolean onMenuItemClick(MenuItem menuItem) {
-            switch (menuItem.getItemId()) {
-                case R.id.action_play_all:
-                    mListener.onOverflowArtistInteraction(artist);
-                    return true;
-                default:
-            }
-            return false;
+            mListener.onOverflowArtistInteraction(artist, menuItem.getItemId());
+            return true;
         }
     }
 
