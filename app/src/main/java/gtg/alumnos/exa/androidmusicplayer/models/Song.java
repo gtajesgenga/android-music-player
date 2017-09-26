@@ -1,4 +1,4 @@
-package gtg.alumnos.exa.androidmusicplayer;
+package gtg.alumnos.exa.androidmusicplayer.models;
 
 import android.text.format.DateUtils;
 
@@ -21,12 +21,13 @@ public class Song implements Serializable {
 
     public Song() {}
 
-    public Song(String title, String artist, String album, String data, String albumArt) {
+    public Song(String title, String artist, String album, String data, String albumArt, Long duration) {
         this.title = title;
         this.artist = artist;
         this.album = album;
         this.data = data;
         this.albumArt = albumArt;
+        this.duration = duration;
     }
 
     public String getTitle() {
@@ -41,12 +42,12 @@ public class Song implements Serializable {
         return duration;
     }
 
-    public String getFormatedDuration() {
-        return DateUtils.formatElapsedTime(getDuration() / 1000l);
-    }
-
     public void setDuration(Long duration) {
         this.duration = duration;
+    }
+
+    public String getFormatedDuration() {
+        return DateUtils.formatElapsedTime(getDuration() / 1000l);
     }
 
     public String getArtist() {

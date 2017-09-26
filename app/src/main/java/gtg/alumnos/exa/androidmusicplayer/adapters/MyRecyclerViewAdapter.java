@@ -1,4 +1,4 @@
-package gtg.alumnos.exa.androidmusicplayer;
+package gtg.alumnos.exa.androidmusicplayer.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -11,15 +11,18 @@ import android.widget.TextView;
 import java.util.Collections;
 import java.util.List;
 
+import gtg.alumnos.exa.androidmusicplayer.R;
+import gtg.alumnos.exa.androidmusicplayer.models.Song;
+
 /**
  * Created by Valdio Veliu on 16-07-08.
  */
-public class RecyclerView_Adapter extends RecyclerView.Adapter<ViewHolder> {
+public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.ViewHolder> {
 
     List<Song> list = Collections.emptyList();
     Context context;
 
-    public RecyclerView_Adapter(List<Song> list, Context context) {
+    public MyRecyclerViewAdapter(List<Song> list, Context context) {
         this.list = list;
         this.context = context;
     }
@@ -50,16 +53,15 @@ public class RecyclerView_Adapter extends RecyclerView.Adapter<ViewHolder> {
         super.onAttachedToRecyclerView(recyclerView);
     }
 
-}
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
-class ViewHolder extends RecyclerView.ViewHolder {
+        TextView title;
+        ImageView play_pause;
 
-    TextView title;
-    ImageView play_pause;
-
-    ViewHolder(View itemView) {
-        super(itemView);
-        title = (TextView) itemView.findViewById(R.id.title);
-        play_pause = (ImageView) itemView.findViewById(R.id.play_pause);
+        ViewHolder(View itemView) {
+            super(itemView);
+            title = (TextView) itemView.findViewById(R.id.title);
+            play_pause = (ImageView) itemView.findViewById(R.id.play_pause);
+        }
     }
 }

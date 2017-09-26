@@ -1,9 +1,7 @@
-package gtg.alumnos.exa.androidmusicplayer;
+package gtg.alumnos.exa.androidmusicplayer.adapters;
 
 import android.net.Uri;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.RecyclerView;
-import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +10,10 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import gtg.alumnos.exa.androidmusicplayer.AlbumsFragment.OnListFragmentAlbumInteractionListener;
+import gtg.alumnos.exa.androidmusicplayer.R;
+import gtg.alumnos.exa.androidmusicplayer.fragments.AlbumsFragment.OnListFragmentAlbumInteractionListener;
+import gtg.alumnos.exa.androidmusicplayer.fragments.SongsFragment;
+import gtg.alumnos.exa.androidmusicplayer.models.Song;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link Song} and makes a call to the
@@ -42,6 +43,14 @@ public class MySongsRecyclerViewAdapter extends RecyclerView.Adapter<MySongsRecy
 
         if (holder.mItem.getTitle() != null) {
             holder.title.setText(holder.mItem.getTitle());
+        }
+
+        if (holder.mItem.getArtist() != null) {
+            holder.artist.setText(holder.mItem.getArtist());
+        }
+
+        if (holder.mItem.getAlbum() != null) {
+            holder.album.setText(holder.mItem.getAlbum());
         }
 
         if (holder.mItem.getFormatedDuration() != null) {
@@ -74,9 +83,10 @@ public class MySongsRecyclerViewAdapter extends RecyclerView.Adapter<MySongsRecy
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public final TextView title;
+        public final TextView album;
+        public final TextView artist;
         public final TextView duration;
         public final ImageView art;
-        public final FloatingActionButton flag;
         public Song mItem;
 
         public ViewHolder(View view) {
@@ -84,10 +94,9 @@ public class MySongsRecyclerViewAdapter extends RecyclerView.Adapter<MySongsRecy
             mView = view;
             title = (TextView) view.findViewById(R.id.title);
             duration = (TextView) view.findViewById(R.id.duration);
+            album = (TextView) view.findViewById(R.id.album);
+            artist = (TextView) view.findViewById(R.id.artist);
             art = (ImageView) view.findViewById(R.id.art);
-            flag = (FloatingActionButton) view.findViewById(R.id.play_flag);
-            flag.setBackgroundTintList(null);
-            flag.setVisibility(View.INVISIBLE);
         }
 
         @Override

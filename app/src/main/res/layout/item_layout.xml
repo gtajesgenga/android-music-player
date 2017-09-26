@@ -18,23 +18,23 @@
             android:id="@+id/play_pause"
             android:layout_width="45dp"
             android:layout_height="45dp"
-            android:src="@android:drawable/ic_media_play"
             android:layout_gravity="center_vertical"
-            android:tint="@color/colorAccent"
-            android:foregroundGravity="center_vertical"
             android:layout_marginLeft="4dp"
             android:layout_marginRight="8dp"
-            android:backgroundTint="@color/icons" />
+            android:backgroundTint="@color/icons"
+            android:foregroundGravity="center_vertical"
+            android:src="@android:drawable/ic_media_play"
+            android:tint="@color/colorAccent" />
 
         <TextView
             android:id="@+id/title"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Title"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/primary_text"
             android:layout_gravity="center_vertical"
             android:foregroundGravity="center_horizontal"
+            android:text="Title"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@color/primary_text"
             android:textStyle="bold|italic" />
 
 

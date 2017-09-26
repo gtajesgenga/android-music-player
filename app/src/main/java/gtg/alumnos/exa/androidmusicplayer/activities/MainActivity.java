@@ -1,9 +1,11 @@
-package gtg.alumnos.exa.androidmusicplayer;
+package gtg.alumnos.exa.androidmusicplayer.activities;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
@@ -14,11 +16,25 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.ArrayList;
+
+import gtg.alumnos.exa.androidmusicplayer.R;
+import gtg.alumnos.exa.androidmusicplayer.fragments.AlbumsFragment;
+import gtg.alumnos.exa.androidmusicplayer.fragments.ArtistsFragment;
+import gtg.alumnos.exa.androidmusicplayer.fragments.PlaylistSelectorDialogFragment;
+import gtg.alumnos.exa.androidmusicplayer.fragments.PlaylistsFragment;
+import gtg.alumnos.exa.androidmusicplayer.fragments.SongsFragment;
+import gtg.alumnos.exa.androidmusicplayer.models.Album;
+import gtg.alumnos.exa.androidmusicplayer.models.Artist;
+import gtg.alumnos.exa.androidmusicplayer.models.Playlist;
+import gtg.alumnos.exa.androidmusicplayer.models.Song;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         ArtistsFragment.OnListFragmenArtistInteractionListener,
         AlbumsFragment.OnListFragmentAlbumInteractionListener,
-        SongsFragment.OnListFragmentSongInteractionListener {
+        SongsFragment.OnListFragmentSongInteractionListener,
+        PlaylistsFragment.OnListFragmentPlaylistsInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +100,8 @@ public class MainActivity extends AppCompatActivity
             fragment = AlbumsFragment.newInstance(1, null, null);
         } else if (id == R.id.nav_song) {
             fragment = SongsFragment.newInstance(1, null, null);
+        } else if (id == R.id.playlists) {
+            fragment = new PlaylistsFragment();
         }
         getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).commit();
@@ -126,13 +144,13 @@ public class MainActivity extends AppCompatActivity
             selectionArgs.replace(0, selectionArgs.length(), selectionArgs.toString().replaceFirst(",", ""));
 
         Intent i = new Intent(this, PlayerActivity.class);
-        i.putExtra("selection", selection.toString().replace(",", " AND "));
-        i.putExtra("selectionArgs", selectionArgs.toString().split(","));
+        i.putExtra(PlayerActivity.SELECTION, selection.toString().replace(",", " AND "));
+        i.putExtra(PlayerActivity.SELECTION_ARGS, selectionArgs.toString().split(","));
         startActivity(i);
     }
 
     @Override
-    public void onOverflowAlbumInteraction(Album item) {
+    public void onOverflowAlbumInteraction(Album item, int action) {
         StringBuffer selection = new StringBuffer();
         StringBuffer selectionArgs = new StringBuffer();
 
@@ -147,11 +165,33 @@ public class MainActivity extends AppCompatActivity
         if (selectionArgs.toString().startsWith(","))
             selectionArgs.replace(0, selectionArgs.length(), selectionArgs.toString().replaceFirst(",", ""));
 
-        Intent i = new Intent(this, PlayerActivity.class);
-        i.putExtra("selection", selection.toString().replace(",", " AND "));
-        i.putExtra("selectionArgs", selectionArgs.toString().split(","));
-        i.putExtra("albumArt", item.getAlbum_art());
-        startActivity(i);
+        if (action == R.id.action_play_all) {
+            Intent i = new Intent(this, PlayerActivity.class);
+            i.putExtra(PlayerActivity.SELECTION, selection.toString().replace(",", " AND "));
+            i.putExtra(PlayerActivity.SELECTION_ARGS, selectionArgs.toString().split(","));
+            i.putExtra(PlayerActivity.ALBUM_ART, item.getAlbum_art());
+            startActivity(i);
+        } else if (action == R.id.action_add_playlist) {
+            Cursor cursor = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null,
+                    MediaStore.Audio.Media.IS_MUSIC + "!= 0" + " AND " + selection.toString().replace(",", " AND "),
+                    selectionArgs.toString().split(","),
+                    MediaStore.Audio.Media.TITLE + " ASC");
+            // Save to audioList
+            ArrayList<Song> audioList = new ArrayList<>();
+            while (cursor.moveToNext()) {
+                String data = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+                String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
+                String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+                Long duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
+
+                audioList.add(new Song(title, artist, album, data, null, duration));
+            }
+            cursor.close();
+
+            DialogFragment dialogFragment = PlaylistSelectorDialogFragment.newInstance(audioList);
+            dialogFragment.show(getSupportFragmentManager(), "Dialog");
+        }
     }
 
     @Override
@@ -180,9 +220,22 @@ public class MainActivity extends AppCompatActivity
             selectionArgs.replace(0, selectionArgs.length(),selectionArgs.toString().replaceFirst(",", ""));
 
         Intent i = new Intent(this, PlayerActivity.class);
-        i.putExtra("selection", selection.toString().replace(",", " AND "));
-        i.putExtra("selectionArgs", selectionArgs.toString().split(","));
-        i.putExtra("albumArt", item.getAlbumArt());
+        i.putExtra(PlayerActivity.SELECTION, selection.toString().replace(",", " AND "));
+        i.putExtra(PlayerActivity.SELECTION_ARGS, selectionArgs.toString().split(","));
+        i.putExtra(PlayerActivity.ALBUM_ART, item.getAlbumArt());
+        startActivity(i);
+    }
+
+    @Override
+    public void onListFragmentPlaylistInteraction(Playlist item) {
+        SongsFragment fragment = SongsFragment.newInstance(item.getSongs());
+        getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
+    }
+
+    @Override
+    public void onOverflowPlaylistInteraction(ArrayList<Song> list) {
+        Intent i = new Intent(this, PlayerActivity.class);
+        i.putExtra(PlayerActivity.SONGS_LIST, list);
         startActivity(i);
     }
 }

@@ -1,4 +1,4 @@
-package gtg.alumnos.exa.androidmusicplayer;
+package gtg.alumnos.exa.androidmusicplayer.services;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -25,6 +25,11 @@ import android.telephony.TelephonyManager;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import gtg.alumnos.exa.androidmusicplayer.R;
+import gtg.alumnos.exa.androidmusicplayer.activities.PlayerActivity;
+import gtg.alumnos.exa.androidmusicplayer.models.Song;
+import gtg.alumnos.exa.androidmusicplayer.utils.PlaybackStatus;
+
 public class MediaPlayerService extends Service
         implements MediaPlayer.OnCompletionListener,
         MediaPlayer.OnPreparedListener,
@@ -35,15 +40,20 @@ public class MediaPlayerService extends Service
     public static final String ACTION_PREVIOUS = "gtg.alumnos.exa.androidmusicplayer.ACTION_PREVIOUS";
     public static final String ACTION_NEXT = "gtg.alumnos.exa.androidmusicplayer.ACTION_NEXT";
     public static final String ACTION_STOP = "gtg.alumnos.exa.androidmusicplayer.ACTION_STOP";
-
+    private static final int NOTIFICATION_ID = 222;
+    private final IBinder iBinder = new LocalBinder();
     private MediaSessionManager mediaSessionManager;
     private MediaSessionCompat mediaSession;
     private MediaControllerCompat.TransportControls transportControls;
-    private static final int NOTIFICATION_ID = 222;
-    private final IBinder iBinder = new LocalBinder();
     private MediaPlayer mediaPlayer;
     private int resumePosition;
     private AudioManager audioManager;
+    private boolean ongoingCall = false;
+    private PhoneStateListener phoneStateListener;
+    private TelephonyManager telephonyManager;
+    private ArrayList<Song> audioList;
+    private int audioIndex = -1;
+    private Song activeAudio;
     private BroadcastReceiver becomingNoisyReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -51,12 +61,6 @@ public class MediaPlayerService extends Service
             buildNotification(PlaybackStatus.PAUSED);
         }
     };
-    private boolean ongoingCall = false;
-    private PhoneStateListener phoneStateListener;
-    private TelephonyManager telephonyManager;
-    private ArrayList<Song> audioList;
-    private int audioIndex = -1;
-    private Song activeAudio;
     private BroadcastReceiver playNewAudio = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -76,6 +80,9 @@ public class MediaPlayerService extends Service
         }
     };
 
+    public MediaPlayerService() {
+    }
+
     private void register_playNewAudio() {
         IntentFilter filter = new IntentFilter(PlayerActivity.Broadcast_PLAY_NEW_AUDIO);
         registerReceiver(playNewAudio, filter);
@@ -84,9 +91,6 @@ public class MediaPlayerService extends Service
     private void registerBecomingNoisyReceiver() {
         IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
         registerReceiver(becomingNoisyReceiver, intentFilter);
-    }
-
-    public MediaPlayerService() {
     }
 
     @Override
@@ -414,11 +418,8 @@ public class MediaPlayerService extends Service
         int result = audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC,
                 AudioManager.AUDIOFOCUS_GAIN);
 
-        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-            return true;
-        }
+        return result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
 
-        return false;
     }
 
     private boolean removeAudioFocus() {

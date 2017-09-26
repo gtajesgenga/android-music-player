@@ -1,4 +1,4 @@
-package gtg.alumnos.exa.androidmusicplayer;
+package gtg.alumnos.exa.androidmusicplayer.activities;
 
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -20,12 +20,25 @@ import android.widget.ImageView;
 
 import java.util.ArrayList;
 
+import gtg.alumnos.exa.androidmusicplayer.CustomTouchListener;
+import gtg.alumnos.exa.androidmusicplayer.R;
+import gtg.alumnos.exa.androidmusicplayer.adapters.MyRecyclerViewAdapter;
+import gtg.alumnos.exa.androidmusicplayer.models.Song;
+import gtg.alumnos.exa.androidmusicplayer.onItemClickListener;
+import gtg.alumnos.exa.androidmusicplayer.services.MediaPlayerService;
+
 public class PlayerActivity extends AppCompatActivity {
 
     public static final String Broadcast_PLAY_NEW_AUDIO =
             "gtg.alumnos.exa.androidmusicplayer.PlayNewAudio";
-    private MediaPlayerService player;
+    public static final String SELECTION = "selection";
+    public static final String SELECTION_ARGS = "selectionArgs";
+    public static final String ALBUM_ART = "albumArt";
+    public static final String SONGS_LIST = "songs_list";
     boolean serviceBound = false;
+    ImageView collapsingImageView;
+    int imageIndex = 0;
+    private MediaPlayerService player;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -44,24 +57,22 @@ public class PlayerActivity extends AppCompatActivity {
     private String selection;
     private String[] selectionArgs;
     private String albumArt;
-    ImageView collapsingImageView;
-    int imageIndex = 0;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.player_activity);
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
         collapsingImageView = (ImageView) findViewById(R.id.collapsingImageView);
+
+        audioList = null;
 
         Intent i = getIntent();
 
         if (i != null) {
-            selection = i.getStringExtra("selection");
-            selectionArgs = i.getStringArrayExtra("selectionArgs");
-            albumArt = i.getStringExtra("albumArt");
+            selection = i.getStringExtra(SELECTION);
+            selectionArgs = i.getStringArrayExtra(SELECTION_ARGS);
+            albumArt = i.getStringExtra(ALBUM_ART);
+            audioList = (ArrayList<Song>) i.getSerializableExtra(SONGS_LIST);
         }
 
         if (albumArt == null) {
@@ -81,16 +92,20 @@ public class PlayerActivity extends AppCompatActivity {
         } else
             collapsingImageView.setImageURI(Uri.parse(albumArt));
 
-        loadAudio();
-        initRecyclerView();
+        if (audioList == null)
+            loadAudio();
 
-        playAudio(0);
+        if (audioList != null && !audioList.isEmpty()) {
+            initRecyclerView();
+            playAudio(0);
+        }
+
     }
 
     private void initRecyclerView() {
         if (audioList.size() > 0) {
             RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
-            RecyclerView_Adapter adapter = new RecyclerView_Adapter(audioList, getApplication());
+            MyRecyclerViewAdapter adapter = new MyRecyclerViewAdapter(audioList, getApplication());
             recyclerView.setAdapter(adapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
             recyclerView.addOnItemTouchListener(new CustomTouchListener(this, new onItemClickListener() {
@@ -160,9 +175,10 @@ public class PlayerActivity extends AppCompatActivity {
                 String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
                 String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
                 String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+                Long duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
 
                 // Save to audioList
-                audioList.add(new Song(title, artist, album, data, albumArt));
+                audioList.add(new Song(title, artist, album, data, albumArt, duration));
             }
         }
         cursor.close();

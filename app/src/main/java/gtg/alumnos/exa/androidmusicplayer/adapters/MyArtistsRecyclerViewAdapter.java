@@ -1,7 +1,7 @@
-package gtg.alumnos.exa.androidmusicplayer;
+package gtg.alumnos.exa.androidmusicplayer.adapters;
 
 import android.content.Context;
-import android.net.Uri;
+import android.support.v4.util.Pair;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,19 +14,21 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import gtg.alumnos.exa.androidmusicplayer.AlbumsFragment.OnListFragmentAlbumInteractionListener;
+import gtg.alumnos.exa.androidmusicplayer.R;
+import gtg.alumnos.exa.androidmusicplayer.fragments.ArtistsFragment.OnListFragmenArtistInteractionListener;
+import gtg.alumnos.exa.androidmusicplayer.models.Artist;
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link Album} and makes a call to the
- * specified {@link OnListFragmentAlbumInteractionListener}.
+ * {@link RecyclerView.Adapter} that can display a {@link Pair<String,String>} and makes a call to the
+ * specified {@link OnListFragmenArtistInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class MyAlbumsRecyclerViewAdapter extends RecyclerView.Adapter<MyAlbumsRecyclerViewAdapter.ViewHolder> {
+public class MyArtistsRecyclerViewAdapter extends RecyclerView.Adapter<MyArtistsRecyclerViewAdapter.ViewHolder> {
 
-    private final List<Album> mValues;
-    private final OnListFragmentAlbumInteractionListener mListener;
+    private final List<Artist> mValues;
+    private final OnListFragmenArtistInteractionListener mListener;
 
-    public MyAlbumsRecyclerViewAdapter(List<Album> items, OnListFragmentAlbumInteractionListener listener) {
+    public MyArtistsRecyclerViewAdapter(List<Artist> items, OnListFragmenArtistInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -34,30 +36,18 @@ public class MyAlbumsRecyclerViewAdapter extends RecyclerView.Adapter<MyAlbumsRe
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.fragment_albums_items, parent, false);
+                .inflate(R.layout.fragment_artists_items, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.mItem = mValues.get(position);
-
-        if (holder.mItem.getArtist() != null) {
-            holder.artist.setText(holder.mItem.getArtist());
+        if (holder.mItem.getName() != null) {
+            holder.artist.setText(holder.mItem.getName());
         }
-
-        if (holder.mItem.getAlbum() != null) {
-            holder.album.setText(holder.mItem.getAlbum());
-        }
-
-        if (holder.mItem.getSongs_count() != null) {
-            holder.count.setText(String.format(holder.mView.getResources().getString(R.string.count_songs), holder.mItem.getSongs_count().toString()));
-        }
-
-        if (holder.mItem.getAlbum_art() != null) {
-            holder.thumbnail.setImageURI(Uri.parse(holder.mItem.getAlbum_art()));
-        } else {
-            holder.thumbnail.setVisibility(View.GONE);
+        if (holder.mItem.getAlbums_count() != null) {
+            holder.count.setText(String.format(holder.mView.getResources().getString(R.string.count_albums), holder.mItem.getAlbums_count().toString()));
         }
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -66,7 +56,7 @@ public class MyAlbumsRecyclerViewAdapter extends RecyclerView.Adapter<MyAlbumsRe
                 if (null != mListener) {
                     // Notify the active callbacks interface (the activity, if the
                     // fragment is attached to one) that an item has been selected.
-                    mListener.onListFragmentAlbumInteraction(holder.mItem);
+                    mListener.onListFragmentArtistInteraction(holder.mItem);
                 }
             }
         });
@@ -79,12 +69,12 @@ public class MyAlbumsRecyclerViewAdapter extends RecyclerView.Adapter<MyAlbumsRe
         });
     }
 
-    private void showPopupMenu(View view, Album artist) {
+    private void showPopupMenu(View view, Artist artist) {
         // inflate menu
         PopupMenu popup = new PopupMenu((Context) mListener, view);
         MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.menu_overflow, popup.getMenu());
-        popup.setOnMenuItemClickListener(new MyAlbumsRecyclerViewAdapter.MyMenuItemClickListener(artist));
+        popup.setOnMenuItemClickListener(new MyMenuItemClickListener(artist));
         popup.show();
     }
 
@@ -95,9 +85,9 @@ public class MyAlbumsRecyclerViewAdapter extends RecyclerView.Adapter<MyAlbumsRe
 
     class MyMenuItemClickListener implements PopupMenu.OnMenuItemClickListener {
 
-        private final Album artist;
+        private final Artist artist;
 
-        public MyMenuItemClickListener(Album artist) {
+        public MyMenuItemClickListener(Artist artist) {
             this.artist = artist;
         }
 
@@ -112,7 +102,7 @@ public class MyAlbumsRecyclerViewAdapter extends RecyclerView.Adapter<MyAlbumsRe
         public boolean onMenuItemClick(MenuItem menuItem) {
             switch (menuItem.getItemId()) {
                 case R.id.action_play_all:
-                    mListener.onOverflowAlbumInteraction(artist);
+                    mListener.onOverflowArtistInteraction(artist);
                     return true;
                 default:
             }
@@ -122,26 +112,22 @@ public class MyAlbumsRecyclerViewAdapter extends RecyclerView.Adapter<MyAlbumsRe
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public final TextView artist;
-        public final TextView album;
-        public final ImageView overflow;
-        public final ImageView thumbnail;
-        public final TextView count;
-        public Album mItem;
+        private final TextView artist;
+        private final TextView count;
+        private final ImageView overflow;
+        public Artist mItem;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
             artist = (TextView) view.findViewById(R.id.artist);
-            album = (TextView) view.findViewById(R.id.album);
-            overflow = (ImageView) view.findViewById(R.id.overflow);
-            thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
             count = (TextView) view.findViewById(R.id.count);
+            overflow = (ImageView) view.findViewById(R.id.overflow);
         }
 
         @Override
         public String toString() {
-            return super.toString() + " '" + album.getText() + "'";
+            return super.toString() + " '" + artist.getText() + "'";
         }
     }
 }

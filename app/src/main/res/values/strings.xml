@@ -20,4 +20,11 @@
     <string name="image_description">image_description</string>
     <string name="flag_button">flag_btn</string>
     <string name="play_all">Play all</string>
+    <string name="playlists">Playlists</string>
+    <string name="playlist">Playlist</string>
+    <string name="add">Add</string>
+    <string name="cancel">Cancel</string>
+    <string name="playlist_dialog_title">Create playlist</string>
+    <string name="add_to_playlist">Add to playlist...</string>
+    <string name="playlist_dialog_selectortitle">Select a playlist</string>
 </resources>

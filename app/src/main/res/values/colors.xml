@@ -7,4 +7,5 @@
     <color name="album_title">#4c4c4c</color>
     <color name="icons">#ffffff</color>
     <color name="primary_text">#212121</color>
+    <color name="list_background">#4081c784</color>
 </resources>
