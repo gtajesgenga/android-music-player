@@ -27,4 +27,6 @@
     <string name="playlist_dialog_title">Create playlist</string>
     <string name="add_to_playlist">Add to playlist...</string>
     <string name="playlist_dialog_selectortitle">Select a playlist</string>
+    <string name="appwidget_text">lalala</string>
+    <string name="add_widget">Add widget</string>
 </resources>

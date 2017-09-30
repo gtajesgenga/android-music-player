@@ -3,6 +3,7 @@ package gtg.alumnos.exa.androidmusicplayer.services;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -54,6 +55,7 @@ public class MediaPlayerService extends Service
     private ArrayList<Song> audioList;
     private int audioIndex = -1;
     private Song activeAudio;
+    private int[] allWidgetIds;
     private BroadcastReceiver becomingNoisyReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -79,6 +81,7 @@ public class MediaPlayerService extends Service
             buildNotification(PlaybackStatus.PLAYING);
         }
     };
+    private AppWidgetManager appWidgetManager;
 
     public MediaPlayerService() {
     }
