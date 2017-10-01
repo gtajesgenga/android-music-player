@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -26,6 +27,7 @@ import gtg.alumnos.exa.androidmusicplayer.adapters.MyRecyclerViewAdapter;
 import gtg.alumnos.exa.androidmusicplayer.models.Song;
 import gtg.alumnos.exa.androidmusicplayer.onItemClickListener;
 import gtg.alumnos.exa.androidmusicplayer.services.MediaPlayerService;
+import gtg.alumnos.exa.androidmusicplayer.utils.StorageUtil;
 
 public class PlayerActivity extends AppCompatActivity {
 
@@ -57,6 +59,9 @@ public class PlayerActivity extends AppCompatActivity {
     private String selection;
     private String[] selectionArgs;
     private String albumArt;
+    private long seek;
+    private Integer audioIndex = 0;
+    private Long audioSeek = 0l;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,12 +97,23 @@ public class PlayerActivity extends AppCompatActivity {
         } else
             collapsingImageView.setImageURI(Uri.parse(albumArt));
 
-        if (audioList == null)
-            loadAudio();
+        if (audioList == null) {
+            if (selection != null)
+                loadAudio();
+            else {
+                StorageUtil st = new StorageUtil(this);
+                audioList = st.loadQueue();
+                Pair<Integer, Long> positions = st.loadPositions();
+                if (positions != null) {
+                    audioIndex = positions.first;
+                    audioSeek = positions.second;
+                }
+            }
+        }
 
         if (audioList != null && !audioList.isEmpty()) {
             initRecyclerView();
-            playAudio(0);
+            playAudio(audioIndex, audioSeek);
         }
 
     }
@@ -146,15 +162,21 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void playAudio(int audioIndex) {
+        playAudio(audioIndex, 0);
+    }
+
+    private void playAudio(int audioIndex, long seek) {
         if (!serviceBound) {
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
             playerIntent.putExtra("audioIndex", audioIndex);
+            playerIntent.putExtra("audioSeek", seek);
             playerIntent.putExtra("audioList", audioList);
             startService(playerIntent);
             bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
         } else {
             Intent broadcastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
             broadcastIntent.putExtra("audioIndex", audioIndex);
+            broadcastIntent.putExtra("audioSeek", seek);
             sendBroadcast(broadcastIntent);
         }
     }

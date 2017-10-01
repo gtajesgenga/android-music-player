@@ -2,6 +2,7 @@ package gtg.alumnos.exa.androidmusicplayer.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.v4.util.Pair;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -21,6 +22,8 @@ import gtg.alumnos.exa.androidmusicplayer.models.Song;
 public class StorageUtil {
     private static final String PLAYLISTS = "gtg.alumnos.exa.androidmusicplayer.PLAYLISTS";
     private final String STORAGE = "gtg.alumnos.exa.androidmusicplayer.STORAGE";
+    private final String QUEUE = "gtg.alumnos.exa.androidmusicplayer.QUEUE";
+    private final String POSITIONS = "gtg.alumnos.exa.androidmusicplayer.POSITIONS";
     private SharedPreferences preferences;
     private Context context;
 
@@ -81,6 +84,43 @@ public class StorageUtil {
                 return;
             }
         }
+    }
+
+    public ArrayList<Song> loadQueue() {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = preferences.getString(QUEUE, null);
+        Type type = new TypeToken<ArrayList<Song>>() {
+        }.getType();
+        return gson.fromJson(json, type);
+    }
+
+    public Pair<Integer, Long> loadPositions() {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = preferences.getString(POSITIONS, null);
+        Type type = new TypeToken<Pair<Integer, Long>>() {
+        }.getType();
+        return gson.fromJson(json, type);
+    }
+
+    public void saveQueue(ArrayList<Song> audioList) {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(audioList);
+        editor.putString(QUEUE, json);
+        editor.apply();
+    }
+
+    public void savePositions(int audioIndex, int currentPosition) {
+        Pair<Integer, Long> positions = new Pair<>(audioIndex, new Long(currentPosition));
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(positions);
+        editor.putString(POSITIONS, json);
+        editor.apply();
     }
 }
 

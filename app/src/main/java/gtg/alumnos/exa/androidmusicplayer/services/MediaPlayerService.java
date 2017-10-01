@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -22,6 +23,7 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v7.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.widget.RemoteViews;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,6 +32,8 @@ import gtg.alumnos.exa.androidmusicplayer.R;
 import gtg.alumnos.exa.androidmusicplayer.activities.PlayerActivity;
 import gtg.alumnos.exa.androidmusicplayer.models.Song;
 import gtg.alumnos.exa.androidmusicplayer.utils.PlaybackStatus;
+import gtg.alumnos.exa.androidmusicplayer.utils.StorageUtil;
+import gtg.alumnos.exa.androidmusicplayer.widgets.PlayerWidget;
 
 public class MediaPlayerService extends Service
         implements MediaPlayer.OnCompletionListener,
@@ -54,8 +58,8 @@ public class MediaPlayerService extends Service
     private TelephonyManager telephonyManager;
     private ArrayList<Song> audioList;
     private int audioIndex = -1;
+    private long audioSeek = 0;
     private Song activeAudio;
-    private int[] allWidgetIds;
     private BroadcastReceiver becomingNoisyReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -68,6 +72,7 @@ public class MediaPlayerService extends Service
         public void onReceive(Context context, Intent intent) {
 
             audioIndex = intent.getIntExtra("audioIndex", audioIndex);
+            audioSeek = intent.getLongExtra("audioSeek", audioSeek);
             if (audioIndex != -1 && audioIndex < audioList.size()) {
                 activeAudio = audioList.get(audioIndex);
             } else {
@@ -110,6 +115,7 @@ public class MediaPlayerService extends Service
             if (intent.getSerializableExtra("audioList") != null)
                 audioList = (ArrayList<Song>) intent.getSerializableExtra("audioList");
             audioIndex = intent.getIntExtra("audioIndex", audioIndex);
+            audioSeek = intent.getLongExtra("audioSeek", audioSeek);
 
             if (audioIndex != -1 && audioIndex < audioList.size()) {
                 activeAudio = audioList.get(audioIndex);
@@ -144,6 +150,9 @@ public class MediaPlayerService extends Service
         super.onDestroy();
         if (mediaPlayer != null) {
             stopMedia();
+            StorageUtil st = new StorageUtil(getApplicationContext());
+            st.saveQueue(audioList);
+            st.savePositions(audioIndex, mediaPlayer.getCurrentPosition());
             mediaPlayer.release();
         }
         removeAudioFocus();
@@ -229,6 +238,11 @@ public class MediaPlayerService extends Service
                 super.onSeekTo(position);
             }
         });
+
+        Intent intent = new Intent(this, PlayerWidget.class);
+        intent.setAction("TOKEN");
+        intent.putExtra("tkn", mediaSession.getSessionToken());
+        sendBroadcast(intent);
     }
 
     private void updateMetaData() {
@@ -302,12 +316,15 @@ public class MediaPlayerService extends Service
         int notificationAction = android.R.drawable.ic_media_pause;
         PendingIntent play_pauseAction = null;
 
+        boolean ongoing = false;
         if (playbackStatus == PlaybackStatus.PLAYING) {
             notificationAction = android.R.drawable.ic_media_pause;
             play_pauseAction = playbackAction(1);
+            ongoing = false;
         } else if (playbackStatus == PlaybackStatus.PAUSED) {
             notificationAction = android.R.drawable.ic_media_play;
             play_pauseAction = playbackAction(0);
+            ongoing = true;
         }
 
         Bitmap largeIcon = activeAudio.getAlbumArt() == null ? BitmapFactory.decodeResource(getResources(),
@@ -315,7 +332,7 @@ public class MediaPlayerService extends Service
 
         NotificationCompat.Builder notificationBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(this)
                 .setShowWhen(false)
-                .setOngoing(true)
+                .setOngoing(ongoing)
                 .setStyle(new NotificationCompat.MediaStyle()
                         .setMediaSession(mediaSession.getSessionToken())
                         .setShowActionsInCompactView(0, 1, 2))
@@ -330,6 +347,22 @@ public class MediaPlayerService extends Service
                 .addAction(android.R.drawable.ic_media_next, "next", playbackAction(2));
 
         ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, notificationBuilder.build());
+
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this
+                .getApplicationContext());
+
+        int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(this.getPackageName(), PlayerWidget.class.getName()));
+
+        for (int widgetId : ids) {
+            RemoteViews remoteViews = new RemoteViews(this.getApplicationContext().getPackageName(), R.layout.player_widget);
+            remoteViews.setTextViewText(R.id.title, activeAudio.getTitle());
+            remoteViews.setTextViewText(R.id.artist, activeAudio.getArtist());
+
+            remoteViews.setOnClickPendingIntent(R.id.btn_play, play_pauseAction);
+            remoteViews.setImageViewBitmap(R.id.btn_play, BitmapFactory.decodeResource(getResources(),
+                    notificationAction));
+            appWidgetManager.updateAppWidget(widgetId, remoteViews);
+        }
     }
 
     private void removeNotification() {
@@ -468,6 +501,7 @@ public class MediaPlayerService extends Service
 
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
+        mediaPlayer.seekTo((int) audioSeek);
         playMedia();
     }
 

@@ -36,6 +36,8 @@ public class MainActivity extends AppCompatActivity
         SongsFragment.OnListFragmentSongInteractionListener,
         PlaylistsFragment.OnListFragmentPlaylistsInteractionListener {
 
+    public static final String INIT_PLAYER = "init-player";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +53,15 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        Intent i = getIntent();
+        if (i != null) {
+            if (i.getBooleanExtra(INIT_PLAYER, false)) {
+                Intent intent = new Intent(this, PlayerActivity.class);
+                startActivity(intent);
+                return;
+            }
+        }
+
         onNavigationItemSelected(navigationView.getMenu().getItem(0));
     }
 
