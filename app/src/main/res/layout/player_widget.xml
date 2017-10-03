@@ -13,7 +13,7 @@
         android:layout_gravity="center_vertical"
         android:background="@color/widget_bg_image"
         android:foregroundGravity="center_vertical"
-        android:scaleType="centerCrop"
+        android:scaleType="centerInside"
         android:src="@drawable/ic_song"
         android:tint="@color/primary_text" />
 
