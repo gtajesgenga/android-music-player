@@ -23,12 +23,14 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v7.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
 import gtg.alumnos.exa.androidmusicplayer.R;
+import gtg.alumnos.exa.androidmusicplayer.activities.MainActivity;
 import gtg.alumnos.exa.androidmusicplayer.activities.PlayerActivity;
 import gtg.alumnos.exa.androidmusicplayer.models.Song;
 import gtg.alumnos.exa.androidmusicplayer.utils.PlaybackStatus;
@@ -86,7 +88,6 @@ public class MediaPlayerService extends Service
             buildNotification(PlaybackStatus.PLAYING);
         }
     };
-    private AppWidgetManager appWidgetManager;
 
     public MediaPlayerService() {
     }
@@ -138,7 +139,8 @@ public class MediaPlayerService extends Service
                 e.printStackTrace();
                 stopSelf();
             }
-            buildNotification(PlaybackStatus.PLAYING);
+            if (activeAudio != null)
+                buildNotification(PlaybackStatus.PLAYING);
         }
 
         handleIncomingActions(intent);
@@ -176,7 +178,10 @@ public class MediaPlayerService extends Service
 
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         try {
-            mediaPlayer.setDataSource(activeAudio.getData());
+            if (activeAudio != null)
+                mediaPlayer.setDataSource(activeAudio.getData());
+            else
+                return;
         } catch (IOException e) {
             e.printStackTrace();
             stopSelf();
@@ -199,6 +204,8 @@ public class MediaPlayerService extends Service
             @Override
             public void onPlay() {
                 super.onPlay();
+                if (activeAudio == null)
+                    return;
                 resumeMedia();
                 buildNotification(PlaybackStatus.PLAYING);
             }
@@ -206,6 +213,8 @@ public class MediaPlayerService extends Service
             @Override
             public void onPause() {
                 super.onPause();
+                if (activeAudio == null)
+                    return;
                 pauseMedia();
                 buildNotification(PlaybackStatus.PAUSED);
             }
@@ -213,6 +222,8 @@ public class MediaPlayerService extends Service
             @Override
             public void onSkipToNext() {
                 super.onSkipToNext();
+                if (activeAudio == null)
+                    return;
                 skipToNext();
                 updateMetaData();
                 buildNotification(PlaybackStatus.PLAYING);
@@ -221,6 +232,8 @@ public class MediaPlayerService extends Service
             @Override
             public void onSkipToPrevious() {
                 super.onSkipToPrevious();
+                if (activeAudio == null)
+                    return;
                 skipToPrevious();
                 updateMetaData();
                 buildNotification(PlaybackStatus.PLAYING);
@@ -248,12 +261,14 @@ public class MediaPlayerService extends Service
     private void updateMetaData() {
         Bitmap albumArt = BitmapFactory.decodeResource(getResources(),
                 R.drawable.image5);
-        mediaSession.setMetadata(new MediaMetadataCompat.Builder()
-                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
-                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, activeAudio.getArtist())
-                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, activeAudio.getAlbum())
-                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, activeAudio.getTitle())
-                .build());
+        if (activeAudio != null) {
+            mediaSession.setMetadata(new MediaMetadataCompat.Builder()
+                    .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
+                    .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, activeAudio.getArtist())
+                    .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, activeAudio.getAlbum())
+                    .putString(MediaMetadataCompat.METADATA_KEY_TITLE, activeAudio.getTitle())
+                    .build());
+        }
     }
 
     private void playMedia() {
@@ -284,6 +299,7 @@ public class MediaPlayerService extends Service
     }
 
     private void skipToNext() {
+        audioSeek = 0;
 
         if (audioIndex == audioList.size() - 1) {
             audioIndex = 0;
@@ -298,6 +314,7 @@ public class MediaPlayerService extends Service
     }
 
     private void skipToPrevious() {
+        audioSeek = 0;
 
         if (audioIndex == 0) {
             audioIndex = audioList.size() - 1;
@@ -355,6 +372,9 @@ public class MediaPlayerService extends Service
 
         for (int widgetId : ids) {
             RemoteViews remoteViews = new RemoteViews(this.getApplicationContext().getPackageName(), R.layout.player_widget);
+            remoteViews.setViewVisibility(R.id.btn_play, View.VISIBLE);
+            remoteViews.setViewVisibility(R.id.btn_prev, View.VISIBLE);
+            remoteViews.setViewVisibility(R.id.btn_next, View.VISIBLE);
             remoteViews.setTextViewText(R.id.title, activeAudio.getTitle());
             remoteViews.setTextViewText(R.id.artist, activeAudio.getArtist());
 
@@ -368,6 +388,37 @@ public class MediaPlayerService extends Service
     private void removeNotification() {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(NOTIFICATION_ID);
+
+        int notificationAction;
+        PendingIntent play_pauseAction;
+
+        notificationAction = android.R.drawable.ic_media_play;
+        play_pauseAction = playbackAction(0);
+
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this
+                .getApplicationContext());
+
+        int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(this.getPackageName(), PlayerWidget.class.getName()));
+
+        for (int widgetId : ids) {
+            RemoteViews remoteViews = new RemoteViews(this.getApplicationContext().getPackageName(), R.layout.player_widget);
+
+            Intent intent = new Intent(this.getApplicationContext(), MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra(MainActivity.INIT_PLAYER, true);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this.getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            remoteViews.setOnClickPendingIntent(R.id.widget_layout, pendingIntent);
+
+            remoteViews.setOnClickPendingIntent(R.id.btn_play, play_pauseAction);
+            remoteViews.setImageViewBitmap(R.id.btn_play, BitmapFactory.decodeResource(getResources(),
+                    notificationAction));
+
+            remoteViews.setViewVisibility(R.id.btn_play, View.INVISIBLE);
+            remoteViews.setViewVisibility(R.id.btn_prev, View.INVISIBLE);
+            remoteViews.setViewVisibility(R.id.btn_next, View.INVISIBLE);
+            appWidgetManager.updateAppWidget(widgetId, remoteViews);
+        }
     }
 
     private PendingIntent playbackAction(int actionNumber) {

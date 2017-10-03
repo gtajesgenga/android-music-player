@@ -7,4 +7,25 @@
     <string name="album">Album</string>
     <string name="filters_descr">Seleccione una opción de filtrado</string>
     <string name="flag_button">flag_btn</string>
+    <string name="action_settings">Configuraciones</string>
+    <string name="add">Agregar</string>
+    <string name="add_to_playlist">Agragar a la lista...</string>
+    <string name="add_widget">Agregar widget</string>
+    <string name="albums">Albums</string>
+    <string name="appwidget_text">lalala</string>
+    <string name="cancel">Cancelar</string>
+    <string name="count_albums">%s album(s)</string>
+    <string name="count_songs">%s cancion(es)</string>
+    <string name="image_description">image_description</string>
+    <string name="navigation_drawer_close">Cerrar barra de navegación</string>
+    <string name="navigation_drawer_open">Abrir barra de navegación</string>
+    <string name="overflow_button">Botón overflow</string>
+    <string name="play_all">Reproducir todo</string>
+    <string name="playlist">Lista de reproducción</string>
+    <string name="playlist_dialog_selectortitle">Seleccione una lista</string>
+    <string name="playlist_dialog_title">Crear una lista</string>
+    <string name="playlists">Listas de reproducción</string>
+    <string name="songs">Canciones</string>
+    <string name="thumbnail_description">thumbnail_description</string>
+    <string name="title_activity_player">Reproduciendo</string>
 </resources>
