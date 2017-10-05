@@ -29,4 +29,6 @@
     <string name="playlist_dialog_selectortitle">Select a playlist</string>
     <string name="appwidget_text">lalala</string>
     <string name="add_widget">Add widget</string>
+    <string name="lyrics_dialog_title">Lyric</string>
+    <string name="accept">Accept</string>
 </resources>

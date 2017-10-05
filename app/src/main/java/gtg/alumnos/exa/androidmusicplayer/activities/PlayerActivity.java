@@ -1,9 +1,11 @@
 package gtg.alumnos.exa.androidmusicplayer.activities;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.TypedArray;
 import android.database.Cursor;
@@ -12,6 +14,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,19 +27,23 @@ import java.util.ArrayList;
 import gtg.alumnos.exa.androidmusicplayer.CustomTouchListener;
 import gtg.alumnos.exa.androidmusicplayer.R;
 import gtg.alumnos.exa.androidmusicplayer.adapters.MyRecyclerViewAdapter;
+import gtg.alumnos.exa.androidmusicplayer.fragments.LyricDialogFragment;
 import gtg.alumnos.exa.androidmusicplayer.models.Song;
 import gtg.alumnos.exa.androidmusicplayer.onItemClickListener;
 import gtg.alumnos.exa.androidmusicplayer.services.MediaPlayerService;
 import gtg.alumnos.exa.androidmusicplayer.utils.StorageUtil;
 
-public class PlayerActivity extends AppCompatActivity {
+public class PlayerActivity extends AppCompatActivity implements LyricDialogFragment.NoticeDialogListener {
 
     public static final String Broadcast_PLAY_NEW_AUDIO =
             "gtg.alumnos.exa.androidmusicplayer.PlayNewAudio";
+    public static final String Broadcast_LYRICS =
+            "gtg.alumnos.exa.androidmusicplayer.Lyrics";
     public static final String SELECTION = "selection";
     public static final String SELECTION_ARGS = "selectionArgs";
     public static final String ALBUM_ART = "albumArt";
     public static final String SONGS_LIST = "songs_list";
+    public static final String LYRIC = "lyric";
     boolean serviceBound = false;
     ImageView collapsingImageView;
     int imageIndex = 0;
@@ -55,6 +62,14 @@ public class PlayerActivity extends AppCompatActivity {
             serviceBound = false;
         }
     };
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String lyric = (String) intent.getSerializableExtra(LYRIC);
+            LyricDialogFragment fragment = LyricDialogFragment.newInstance(PlayerActivity.this, lyric);
+            fragment.show(getSupportFragmentManager(), "Dialog");
+        }
+    };
     private ArrayList<Song> audioList;
     private String selection;
     private String[] selectionArgs;
@@ -68,6 +83,8 @@ public class PlayerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.player_activity);
         collapsingImageView = (ImageView) findViewById(R.id.collapsingImageView);
+
+        registerReceiver(broadcastReceiver, new IntentFilter(PlayerActivity.Broadcast_LYRICS));
 
         audioList = null;
 
@@ -204,5 +221,10 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
         cursor.close();
+    }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+
     }
 }

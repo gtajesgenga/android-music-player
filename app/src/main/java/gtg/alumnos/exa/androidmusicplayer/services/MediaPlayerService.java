@@ -17,6 +17,7 @@ import android.media.session.MediaSessionManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.StrictMode;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -25,6 +26,11 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.RemoteViews;
+
+import org.jmusixmatch.MusixMatch;
+import org.jmusixmatch.MusixMatchException;
+import org.jmusixmatch.entity.lyrics.Lyrics;
+import org.jmusixmatch.entity.track.Track;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -62,6 +68,7 @@ public class MediaPlayerService extends Service
     private int audioIndex = -1;
     private long audioSeek = 0;
     private Song activeAudio;
+    private MusixMatch musixMatch;
     private BroadcastReceiver becomingNoisyReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -108,10 +115,15 @@ public class MediaPlayerService extends Service
         callStateListener();
         registerBecomingNoisyReceiver();
         register_playNewAudio();
+        musixMatch = new MusixMatch("a2e4013c36bcb7a894443da61452eaf4");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (android.os.Build.VERSION.SDK_INT > 9) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
         try {
             if (intent.getSerializableExtra("audioList") != null)
                 audioList = (ArrayList<Song>) intent.getSerializableExtra("audioList");
@@ -268,6 +280,22 @@ public class MediaPlayerService extends Service
                     .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, activeAudio.getAlbum())
                     .putString(MediaMetadataCompat.METADATA_KEY_TITLE, activeAudio.getTitle())
                     .build());
+
+            try {
+                Track response = musixMatch.getMatchingTrack(activeAudio.getTitle(), activeAudio.getArtist());
+                if (response != null) {
+
+                    if (response.getTrack() != null && response.getTrack().getHasLyrics() == 1) {
+                        Lyrics lyric = musixMatch.getLyrics(response.getTrack().getTrackId());
+                        Intent intent = new Intent();
+                        intent.setAction(PlayerActivity.Broadcast_LYRICS);
+                        intent.putExtra(PlayerActivity.LYRIC, lyric.getLyricsBody());
+                        sendBroadcast(intent);
+                    }
+                }
+            } catch (MusixMatchException e) {
+                e.printStackTrace();
+            }
         }
     }
 
