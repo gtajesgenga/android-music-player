@@ -176,6 +176,7 @@ public class PlayerActivity extends AppCompatActivity implements LyricDialogFrag
             unbindService(serviceConnection);
             player.stopSelf();
         }
+        unregisterReceiver(broadcastReceiver);
     }
 
     private void playAudio(int audioIndex) {
