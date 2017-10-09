@@ -54,4 +54,15 @@
         app:layout_anchor="@id/app_bar"
         app:layout_anchorGravity="bottom|end" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_lyrics"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@drawable/ic_comment"
+        android:visibility="invisible"
+        app:layout_anchor="@+id/app_bar"
+        app:layout_anchorGravity="center_vertical|right" />
+
 </android.support.design.widget.CoordinatorLayout>

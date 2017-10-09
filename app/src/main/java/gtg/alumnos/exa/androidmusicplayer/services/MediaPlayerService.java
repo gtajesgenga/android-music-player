@@ -33,6 +33,7 @@ import org.jmusixmatch.entity.lyrics.Lyrics;
 import org.jmusixmatch.entity.track.Track;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import gtg.alumnos.exa.androidmusicplayer.R;
@@ -282,17 +283,21 @@ public class MediaPlayerService extends Service
                     .build());
 
             try {
+                Intent intent = new Intent();
+                intent.setAction(PlayerActivity.Broadcast_LYRICS);
                 Track response = musixMatch.getMatchingTrack(activeAudio.getTitle(), activeAudio.getArtist());
                 if (response != null) {
 
                     if (response.getTrack() != null && response.getTrack().getHasLyrics() == 1) {
                         Lyrics lyric = musixMatch.getLyrics(response.getTrack().getTrackId());
-                        Intent intent = new Intent();
-                        intent.setAction(PlayerActivity.Broadcast_LYRICS);
+
                         intent.putExtra(PlayerActivity.LYRIC, lyric.getLyricsBody());
-                        sendBroadcast(intent);
+
                     }
+                } else {
+                    intent.putExtra(PlayerActivity.LYRIC, (Serializable) null);
                 }
+                sendBroadcast(intent);
             } catch (MusixMatchException e) {
                 e.printStackTrace();
             }

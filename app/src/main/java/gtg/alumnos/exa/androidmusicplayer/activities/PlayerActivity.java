@@ -48,6 +48,7 @@ public class PlayerActivity extends AppCompatActivity implements LyricDialogFrag
     ImageView collapsingImageView;
     int imageIndex = 0;
     private MediaPlayerService player;
+    private LyricDialogFragment lyricFragment;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -66,8 +67,19 @@ public class PlayerActivity extends AppCompatActivity implements LyricDialogFrag
         @Override
         public void onReceive(Context context, Intent intent) {
             String lyric = (String) intent.getSerializableExtra(LYRIC);
-            LyricDialogFragment fragment = LyricDialogFragment.newInstance(PlayerActivity.this, lyric);
-            fragment.show(getSupportFragmentManager(), "Dialog");
+            FloatingActionButton fl = (FloatingActionButton) findViewById(R.id.fab_lyrics);
+            fl.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    lyricFragment.show(getSupportFragmentManager(), "Dialog");
+                }
+            });
+            if (lyric != null) {
+                lyricFragment = LyricDialogFragment.newInstance(PlayerActivity.this, lyric);
+                fl.setVisibility(View.VISIBLE);
+            } else {
+                fl.setVisibility(View.INVISIBLE);
+            }
         }
     };
     private ArrayList<Song> audioList;
