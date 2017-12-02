@@ -1,4 +1,4 @@
-package gtg.alumnos.exa.androidmusicplayer;
+package gtg.alumnos.exa.androidmusicplayer.adapters;
 
 import android.content.Context;
 import android.support.v4.util.Pair;
@@ -14,7 +14,9 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import gtg.alumnos.exa.androidmusicplayer.ArtistsFragment.OnListFragmenArtistInteractionListener;
+import gtg.alumnos.exa.androidmusicplayer.R;
+import gtg.alumnos.exa.androidmusicplayer.fragments.ArtistsFragment.OnListFragmenArtistInteractionListener;
+import gtg.alumnos.exa.androidmusicplayer.models.Artist;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link Pair<String,String>} and makes a call to the
@@ -98,13 +100,8 @@ public class MyArtistsRecyclerViewAdapter extends RecyclerView.Adapter<MyArtists
          */
         @Override
         public boolean onMenuItemClick(MenuItem menuItem) {
-            switch (menuItem.getItemId()) {
-                case R.id.action_play_all:
-                    mListener.onOverflowArtistInteraction(artist);
-                    return true;
-                default:
-            }
-            return false;
+            mListener.onOverflowArtistInteraction(artist, menuItem.getItemId());
+            return true;
         }
     }
 

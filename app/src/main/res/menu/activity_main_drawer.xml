@@ -16,6 +16,11 @@
             android:id="@+id/nav_song"
             android:icon="@drawable/ic_song"
             android:title="@string/song" />
+
+        <item
+            android:id="@+id/playlists"
+            android:icon="@drawable/ic_list"
+            android:title="@string/playlists" />
     </group>
 
 </menu>

@@ -1,4 +1,4 @@
-package gtg.alumnos.exa.androidmusicplayer;
+package gtg.alumnos.exa.androidmusicplayer.fragments;
 
 import android.app.Activity;
 import android.content.Context;
@@ -17,8 +17,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import gtg.alumnos.exa.androidmusicplayer.R;
+import gtg.alumnos.exa.androidmusicplayer.adapters.MySongsRecyclerViewAdapter;
+import gtg.alumnos.exa.androidmusicplayer.models.Song;
 
 /**
  * A fragment representing a list of Items.
@@ -28,13 +33,14 @@ import java.util.List;
  */
 public class SongsFragment extends Fragment {
 
+    public static final String SONGS_LIST = "songs_list";
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
     private static final String ARG_SELECTION = "selection";
     private static final String ARG_SELECTIONARGS = "selection-args";
+    RecyclerView recyclerView;
     // TODO: Customize parameters
     private int mColumnCount = 1;
-    RecyclerView recyclerView;
     private List<Song> mData;
     private OnListFragmentSongInteractionListener mListener;
     private MySongsRecyclerViewAdapter adapter;
@@ -46,7 +52,6 @@ public class SongsFragment extends Fragment {
      * fragment (e.g. upon screen orientation changes).
      */
     public SongsFragment() {
-        this.mData = new ArrayList<>();
     }
 
     // TODO: Customize parameter initialization
@@ -61,6 +66,14 @@ public class SongsFragment extends Fragment {
         return fragment;
     }
 
+    public static SongsFragment newInstance(List<Song> list) {
+        SongsFragment fragment = new SongsFragment();
+        Bundle args = new Bundle();
+        args.putSerializable(SONGS_LIST, (Serializable) list);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,7 +82,11 @@ public class SongsFragment extends Fragment {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
             selection = getArguments().getString(ARG_SELECTION);
             selectionArgs = getArguments().getStringArray(ARG_SELECTIONARGS);
+            mData = (List<Song>) getArguments().getSerializable(SONGS_LIST);
         }
+
+        if (mData == null)
+            this.mData = new ArrayList<>();
 
     }
 
@@ -78,7 +95,8 @@ public class SongsFragment extends Fragment {
                              Bundle savedInstanceState) {
         ((AppCompatActivity)this.getActivity()).getSupportActionBar().setSubtitle(getActivity().getResources().getString(R.string.song));
         View view = inflater.inflate(R.layout.fragment_albums_list, container, false);
-        getLoaderManager().initLoader(0, null, new SongCursorLoaderCB());
+        if (mData.isEmpty())
+            getLoaderManager().initLoader(0, null, new SongCursorLoaderCB());
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
@@ -147,7 +165,7 @@ public class SongsFragment extends Fragment {
                     song.setTitle(data.getString(index));
 
                 if ((index = data.getColumnIndex(MediaStore.Audio.Media.DATA)) != -1)
-                    song.setUri(data.getString(index));
+                    song.setData(data.getString(index));
 
                 if ((index = data.getColumnIndex(MediaStore.Audio.Media.DURATION)) != -1)
                     song.setDuration(data.getLong(index));

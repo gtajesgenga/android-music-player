@@ -1,4 +1,4 @@
-package gtg.alumnos.exa.androidmusicplayer;
+package gtg.alumnos.exa.androidmusicplayer.fragments;
 
 import android.app.Activity;
 import android.content.Context;
@@ -20,37 +20,47 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
+import gtg.alumnos.exa.androidmusicplayer.R;
+import gtg.alumnos.exa.androidmusicplayer.adapters.MyAlbumsRecyclerViewAdapter;
+import gtg.alumnos.exa.androidmusicplayer.models.Album;
+
 /**
  * A fragment representing a list of Items.
  * <p/>
- * Activities containing this fragment MUST implement the {@link OnListFragmenArtistInteractionListener}
+ * Activities containing this fragment MUST implement the {@link OnListFragmentAlbumInteractionListener}
  * interface.
  */
-public class ArtistsFragment extends Fragment {
+public class AlbumsFragment extends Fragment {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
+    private static final String ARG_SELECTION = "selection";
+    private static final String ARG_SELECTIONARGS = "slelection-args";
+    RecyclerView recyclerView;
     // TODO: Customize parameters
     private int mColumnCount = 1;
-    private OnListFragmenArtistInteractionListener mListener;
-    private List<Artist> mData;
-    RecyclerView recyclerView;
-    private MyArtistsRecyclerViewAdapter adapter;
+    private List<Album> mData;
+    private OnListFragmentAlbumInteractionListener mListener;
+    private MyAlbumsRecyclerViewAdapter adapter;
+    private String[] selectionArgs;
+    private String selection;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public ArtistsFragment() {
-        mData = new ArrayList<>();
+    public AlbumsFragment() {
+        this.mData = new ArrayList<>();
     }
 
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
-    public static ArtistsFragment newInstance(int columnCount) {
-        ArtistsFragment fragment = new ArtistsFragment();
+    public static AlbumsFragment newInstance(int columnCount, String selection, String[] selectionArgs) {
+        AlbumsFragment fragment = new AlbumsFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_COLUMN_COUNT, columnCount);
+        args.putString(ARG_SELECTION, selection);
+        args.putStringArray(ARG_SELECTIONARGS, selectionArgs);
         fragment.setArguments(args);
         return fragment;
     }
@@ -61,25 +71,27 @@ public class ArtistsFragment extends Fragment {
 
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
+            selection = getArguments().getString(ARG_SELECTION);
+            selectionArgs = getArguments().getStringArray(ARG_SELECTIONARGS);
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        ((AppCompatActivity)this.getActivity()).getSupportActionBar().setSubtitle(getActivity().getResources().getString(R.string.artist));
-        View view = inflater.inflate(R.layout.fragment_artists_list, container, false);
-        getLoaderManager().initLoader(0, null, new ArtistCursorLoaderCB());
+        ((AppCompatActivity)this.getActivity()).getSupportActionBar().setSubtitle(getActivity().getResources().getString(R.string.album));
+        View view = inflater.inflate(R.layout.fragment_albums_list, container, false);
+        getLoaderManager().initLoader(0, null, new AlbumCursorLoaderCB());
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
-            recyclerView = (RecyclerView) view;
+           recyclerView = (RecyclerView) view;
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            adapter = new MyArtistsRecyclerViewAdapter(mData, mListener);
+            adapter = new MyAlbumsRecyclerViewAdapter(mData, mListener);
             recyclerView.setAdapter(adapter);
         }
         return view;
@@ -89,8 +101,8 @@ public class ArtistsFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        if (activity instanceof OnListFragmenArtistInteractionListener) {
-            mListener = (OnListFragmenArtistInteractionListener) activity;
+        if (activity instanceof OnListFragmentAlbumInteractionListener) {
+            mListener = (OnListFragmentAlbumInteractionListener) activity;
         } else {
             throw new RuntimeException(activity.toString()
                     + " must implement OnListFragmentInteractionListener");
@@ -113,43 +125,52 @@ public class ArtistsFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnListFragmenArtistInteractionListener {
+    public interface OnListFragmentAlbumInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentArtistInteraction(Artist item);
+        void onListFragmentAlbumInteraction(Album item);
 
-        void onOverflowArtistInteraction(Artist item);
+        void onOverflowAlbumInteraction(Album item, int action);
     }
 
-    protected class ArtistCursorLoaderCB implements LoaderManager.LoaderCallbacks<Cursor>{
+    protected class AlbumCursorLoaderCB implements LoaderManager.LoaderCallbacks<Cursor>{
 
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-            return new CursorLoader(ArtistsFragment.this.getActivity(),
-                    MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
-                    new String[]{"_id",MediaStore.Audio.Artists.ARTIST, MediaStore.Audio.Artists.NUMBER_OF_ALBUMS}, null, null, null);
+            return new CursorLoader(AlbumsFragment.this.getActivity(),
+                    MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                    new String[]{"_id",MediaStore.Audio.Albums.ARTIST,MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM, MediaStore.Audio.Albums.NUMBER_OF_SONGS, MediaStore.Audio.AlbumColumns.ALBUM_ART}, AlbumsFragment.this.selection, AlbumsFragment.this.selectionArgs, null);
         }
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-            ArtistsFragment.this.mData.clear();
+            AlbumsFragment.this.mData.clear();
             int index;
             for (data.moveToFirst(); !data.isAfterLast(); data.moveToNext()) {
-                Artist artist = new Artist();
+                Album album = new Album();
 
-                if ((index = data.getColumnIndex(MediaStore.Audio.ArtistColumns.ARTIST)) != -1)
-                    artist.setName(data.getString(index));
+                if ((index = data.getColumnIndex(MediaStore.Audio.Albums.ARTIST)) != -1)
+                    album.setArtist(data.getString(index));
 
-                if ((index = data.getColumnIndex(MediaStore.Audio.ArtistColumns.NUMBER_OF_ALBUMS)) != -1)
-                    artist.setAlbums_count(data.getInt(index));
+                if ((index = data.getColumnIndex(MediaStore.Audio.Albums.ALBUM)) != -1)
+                    album.setAlbum(data.getString(index));
 
-                ArtistsFragment.this.mData.add(artist);
+                if ((index = data.getColumnIndex(MediaStore.Audio.Albums.NUMBER_OF_SONGS)) != -1)
+                    album.setSongs_count(data.getInt(index));
+
+                if ((index = data.getColumnIndex(MediaStore.Audio.AlbumColumns.ALBUM_ART)) != -1)
+                    album.setAlbum_art(data.getString(index));
+
+                if ((index = data.getColumnIndex(MediaStore.Audio.Albums._ID)) != -1)
+                    album.setId(data.getInt(index));
+
+                AlbumsFragment.this.mData.add(album);
             }
             adapter.notifyDataSetChanged();
         }
 
         @Override
         public void onLoaderReset(Loader<Cursor> loader) {
-            ArtistsFragment.this.mData.clear();
+            AlbumsFragment.this.mData.clear();
         }
     }
 }

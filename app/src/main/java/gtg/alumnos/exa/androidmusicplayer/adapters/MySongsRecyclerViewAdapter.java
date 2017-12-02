@@ -1,7 +1,6 @@
-package gtg.alumnos.exa.androidmusicplayer;
+package gtg.alumnos.exa.androidmusicplayer.adapters;
 
 import android.net.Uri;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,19 +10,22 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import gtg.alumnos.exa.androidmusicplayer.ItemFragment.OnListFragmentInteractionListener;
+import gtg.alumnos.exa.androidmusicplayer.R;
+import gtg.alumnos.exa.androidmusicplayer.fragments.AlbumsFragment.OnListFragmentAlbumInteractionListener;
+import gtg.alumnos.exa.androidmusicplayer.fragments.SongsFragment;
+import gtg.alumnos.exa.androidmusicplayer.models.Song;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link Song} and makes a call to the
- * specified {@link OnListFragmentInteractionListener}.
+ * specified {@link OnListFragmentAlbumInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
+public class MySongsRecyclerViewAdapter extends RecyclerView.Adapter<MySongsRecyclerViewAdapter.ViewHolder> {
 
     private final List<Song> mValues;
-    private final OnListFragmentInteractionListener mListener;
+    private final SongsFragment.OnListFragmentSongInteractionListener mListener;
 
-    public MyItemRecyclerViewAdapter(List<Song> items, OnListFragmentInteractionListener listener) {
+    public MySongsRecyclerViewAdapter(List<Song> items, SongsFragment.OnListFragmentSongInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -43,21 +45,22 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
             holder.title.setText(holder.mItem.getTitle());
         }
 
+        if (holder.mItem.getArtist() != null) {
+            holder.artist.setText(holder.mItem.getArtist());
+        }
+
+        if (holder.mItem.getAlbum() != null) {
+            holder.album.setText(holder.mItem.getAlbum());
+        }
+
         if (holder.mItem.getFormatedDuration() != null) {
             holder.duration.setText(holder.mItem.getFormatedDuration());
         }
 
         if (holder.mItem.getAlbumArt() != null) {
             holder.art.setImageURI(Uri.parse(holder.mItem.getAlbumArt()));
-        }
-
-        holder.flag.setVisibility(View.VISIBLE);
-        if (holder.mItem.getSongStatus().equals(Song.SongStatus.PLAYING)) {
-            holder.flag.setImageDrawable(holder.mView.getResources().getDrawable(R.drawable.ic_play_circle_filled_lightblue, holder.mView.getContext().getTheme()));
-        } else if (holder.mItem.getSongStatus().equals(Song.SongStatus.PAUSED)) {
-            holder.flag.setImageDrawable(holder.mView.getResources().getDrawable(R.drawable.ic_pause_circle_filled_lightblue, holder.mView.getContext().getTheme()));
         } else {
-            holder.flag.setVisibility(View.GONE);
+            holder.art.setVisibility(View.GONE);
         }
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -66,10 +69,12 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
                 if (null != mListener) {
                     // Notify the active callbacks interface (the activity, if the
                     // fragment is attached to one) that an item has been selected.
-                    mListener.onListFragmentInteraction(holder.mItem);
+                    mListener.onListFragmentSongInteraction(holder.mItem);
                 }
             }
         });
+
+        // TODO: agregar overflow
     }
 
     @Override
@@ -80,10 +85,10 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public final TextView title;
+        public final TextView album;
+        public final TextView artist;
         public final TextView duration;
         public final ImageView art;
-        public final FloatingActionButton flag;
-
         public Song mItem;
 
         public ViewHolder(View view) {
@@ -91,9 +96,9 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
             mView = view;
             title = (TextView) view.findViewById(R.id.title);
             duration = (TextView) view.findViewById(R.id.duration);
+            album = (TextView) view.findViewById(R.id.album);
+            artist = (TextView) view.findViewById(R.id.artist);
             art = (ImageView) view.findViewById(R.id.art);
-            flag = (FloatingActionButton) view.findViewById(R.id.play_flag);
-            flag.setBackgroundTintList(null);
         }
 
         @Override

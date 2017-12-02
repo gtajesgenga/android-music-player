@@ -1,4 +1,4 @@
-package gtg.alumnos.exa.androidmusicplayer;
+package gtg.alumnos.exa.androidmusicplayer.models;
 
 import android.text.format.DateUtils;
 
@@ -10,24 +10,25 @@ import java.io.Serializable;
 
 public class Song implements Serializable {
 
-    public enum SongStatus {
-        PLAYING,
-        PAUSED,
-        STOPED
-    }
-
     private String title;
     private Long duration;
-    private String Artist;
+    private String artist;
     private String album;
     private Long album_id;
     private Long artist_id;
-    private String uri;
+    private String data;
     private String albumArt;
 
-    private SongStatus songStatus = SongStatus.STOPED;
-
     public Song() {}
+
+    public Song(String title, String artist, String album, String data, String albumArt, Long duration) {
+        this.title = title;
+        this.artist = artist;
+        this.album = album;
+        this.data = data;
+        this.albumArt = albumArt;
+        this.duration = duration;
+    }
 
     public String getTitle() {
         return title;
@@ -41,20 +42,20 @@ public class Song implements Serializable {
         return duration;
     }
 
-    public String getFormatedDuration() {
-        return DateUtils.formatElapsedTime(getDuration() / 1000l);
-    }
-
     public void setDuration(Long duration) {
         this.duration = duration;
     }
 
+    public String getFormatedDuration() {
+        return DateUtils.formatElapsedTime(getDuration() / 1000l);
+    }
+
     public String getArtist() {
-        return Artist;
+        return artist;
     }
 
     public void setArtist(String artist) {
-        Artist = artist;
+        this.artist = artist;
     }
 
     public String getAlbum() {
@@ -65,12 +66,12 @@ public class Song implements Serializable {
         this.album = album;
     }
 
-    public String getUri() {
-        return uri;
+    public String getData() {
+        return data;
     }
 
-    public void setUri(String uri) {
-        this.uri = uri;
+    public void setData(String data) {
+        this.data = data;
     }
 
     public String getAlbumArt() {
@@ -95,14 +96,6 @@ public class Song implements Serializable {
 
     public void setArtist_id(Long artist_id) {
         this.artist_id = artist_id;
-    }
-
-    public SongStatus getSongStatus() {
-        return songStatus;
-    }
-
-    public void setSongStatus(SongStatus songStatus) {
-        this.songStatus = songStatus;
     }
 
     @Override
